@@ -3,207 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MACCA POS - Premium Locked Edition</title>
+    <title>MACCA POS Ultimate V.8.6 - SYNC FIXED</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
         :root {
             --primary-color: #004aad;
             --accent-color: #ffbd59;
-            --glass: rgba(255, 255, 255, 0.9);
-            --glass-dark: rgba(0, 74, 173, 0.05);
+            --glass: rgba(255, 255, 255, 0.95);
             --gold-gradient: linear-gradient(135deg, #ffbd59 0%, #ff9100 100%);
             --blue-gradient: linear-gradient(135deg, #004aad 0%, #041d3d 100%);
         }
 
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            background-color: #f4f7fa; 
-            color: #1a1a1a;
-            transition: 0.5s ease;
-        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f4f7fa; color: #1a1a1a; }
 
-        /* UI LOCK: Glassmorphism Core */
-        .glass-card {
-            background: var(--glass);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 30px;
-        }
-
-        /* Navbar Style */
-        .navbar { 
-            background: white !important; 
-            padding: 18px 30px; 
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            box-shadow: 0 4px 30px rgba(0,0,0,0.03);
-        }
-        .navbar-brand { font-weight: 800; color: var(--primary-color) !important; letter-spacing: -1px; font-size: 1.5rem; }
-
-        /* Search Box Premium */
-        .search-container { position: relative; }
-        .search-input {
-            border-radius: 20px; border: 2px solid transparent; padding: 15px 25px 15px 55px;
-            width: 100%; transition: 0.4s; font-weight: 600; background: white;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-        }
-        .search-input:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 10px 30px rgba(0,74,173,0.1); }
-        .search-icon { position: absolute; left: 22px; top: 50%; transform: translateY(-50%); color: var(--primary-color); font-size: 1.2rem; }
-
-        /* Menu Card Logic */
-        .card-menu { 
-            border: none; border-radius: 28px; overflow: hidden; background: white; 
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; position: relative;
-        }
-        .card-menu:hover { transform: translateY(-12px); box-shadow: 0 25px 50px rgba(0,0,0,0.12); }
-        .menu-img { width: 100%; height: 180px; object-fit: cover; }
-        .price-badge { background: var(--gold-gradient); color: #000; padding: 6px 18px; border-radius: 14px; font-weight: 800; font-size: 0.85rem; }
-        
-        /* Status Habis Visual */
-        .card-menu.habis { opacity: 0.6; filter: grayscale(1); }
-        .habis-tag {
-            position: absolute; top: 15px; right: 15px; background: #ef4444; color: white;
-            padding: 4px 12px; border-radius: 10px; font-weight: 800; font-size: 0.7rem; z-index: 2;
-        }
-
-        /* Cart & Sidebar */
-        .cart-container { 
-            border-radius: 35px; padding: 30px; position: sticky; top: 25px; transition: 0.5s;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.08); background: white; border: 1px solid rgba(255,255,255,0.8);
-        }
-        .cart-container.dinein-theme { border-top: 10px solid var(--primary-color); }
-        .cart-container.antar-theme { border-top: 10px solid var(--accent-color); }
-
-        .btn-premium { border-radius: 20px; padding: 15px 25px; font-weight: 700; transition: 0.4s; border: none; display: flex; align-items: center; justify-content: center; }
-        .btn-blue { background: var(--blue-gradient); color: white; }
-        .btn-blue:hover { transform: scale(1.02); box-shadow: 0 10px 20px rgba(0,74,173,0.3); }
-        .btn-gold { background: var(--gold-gradient); color: black; }
-
-        /* Login Screen Premium */
+        /* UI LOCK: LOGIN SCREEN */
         #login-screen { 
             height: 100vh; display: flex; align-items: center; justify-content: center; 
-            background: var(--blue-gradient); position: relative; overflow: hidden;
+            background: var(--blue-gradient); position: fixed; width: 100%; z-index: 9999;
         }
-        #login-screen::before {
-            content: ''; position: absolute; width: 300px; height: 300px; background: rgba(255,189,89,0.1);
-            filter: blur(80px); border-radius: 50%; top: -50px; right: -50px;
+        .login-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); border-radius: 40px; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
+        .login-input-code {
+            background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 20px; color: white; font-size: 2.8rem; text-align: center;
+            letter-spacing: 15px; font-weight: 800; padding: 15px; width: 100%; outline: none; transition: 0.3s;
         }
 
-        /* Admin UI Fixes */
-        .admin-item { background: rgba(255,255,255,0.7); border-radius: 22px; padding: 18px; margin-bottom: 12px; border: 1px solid rgba(0,0,0,0.03); transition: 0.3s; }
-        .admin-item:hover { background: white; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        /* NAVBAR */
+        .navbar { background: white !important; padding: 15px 30px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); }
+        .nav-pills .nav-link { border-radius: 12px; font-weight: 700; color: var(--primary-color); padding: 10px 20px; }
+        .nav-pills .nav-link.active { background: var(--blue-gradient) !important; box-shadow: 0 8px 20px rgba(0,74,173,0.3); }
 
-        @media print {
-            body * { visibility: hidden; }
-            #print-area, #print-area * { visibility: visible; }
-            #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
+        /* STICKY CART */
+        .sticky-cart { position: sticky; top: 100px; height: calc(100vh - 140px); overflow-y: auto; scrollbar-width: none; }
+        .sticky-cart::-webkit-scrollbar { display: none; }
+
+        /* MENU CARDS */
+        .card-menu { border: none; border-radius: 28px; overflow: hidden; background: white; transition: 0.4s; cursor: pointer; position: relative; height: 100%; }
+        .card-menu:hover { transform: translateY(-12px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .menu-img { width: 100%; height: 170px; object-fit: cover; }
+        .price-badge { background: var(--gold-gradient); color: #000; padding: 6px 15px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; }
+        .habis { opacity: 0.5; filter: grayscale(1); }
+        .habis-tag { position: absolute; top: 15px; right: 15px; background: #ef4444; color: white; padding: 5px 12px; border-radius: 10px; font-weight: 800; font-size: 0.7rem; z-index: 2; }
+
+        /* DASHBOARD STATS */
+        .stat-card-premium {
+            border-radius: 35px; padding: 35px; position: relative; overflow: hidden; color: white; border: none;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); transition: 0.3s;
         }
+        .stat-card-premium i { position: absolute; right: -25px; bottom: -25px; font-size: 9rem; opacity: 0.15; transform: rotate(-15deg); }
+        .stat-card-premium h2 { font-weight: 800; font-size: 2.8rem; margin-top: 10px; }
+
+        /* BUTTONS */
+        .btn-premium { border-radius: 18px; padding: 14px; font-weight: 700; border: none; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-blue { background: var(--blue-gradient); color: white; }
+        
+        .category-btn { white-space: nowrap; padding: 12px 25px; border-radius: 18px; background: white; border: 2px solid transparent; font-weight: 700; color: #555; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; }
+        .category-btn.active { background: var(--primary-color) !important; color: white !important; transform: scale(1.05); border-color: var(--accent-color); }
+        
+        .ongkir-btn { border-radius: 15px; font-weight: 800; transition: 0.3s; border: 2px solid #eee; }
+        .ongkir-btn.active { background: var(--accent-color) !important; border-color: #ff9100; color: black !important; }
+
+        /* PRINT THERMAL 58MM */
+        #print-area { width: 58mm; padding: 5mm; font-family: 'Courier New', monospace; font-size: 11px; background: white; }
+        @media print { body * { visibility: hidden; } #print-area, #print-area * { visibility: visible; } #print-area { display: block !important; position: absolute; left: 0; top: 0; } }
         #print-area { display: none; }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
-    <div class="login-card glass-card p-5 text-center animate__animated animate__zoomIn shadow-lg" style="width: 100%; max-width: 420px;">
-        <div class="mb-5">
-            <div class="bg-white d-inline-block p-4 rounded-circle mb-4 shadow-lg">
-                <i class="fas fa-crown fa-3x text-primary"></i>
-            </div>
-            <h1 class="fw-bold text-dark mb-1">MACCA POS</h1>
-            <p class="text-muted fw-semibold">Exclusive Management System</p>
+    <div class="login-card p-5 text-center animate__animated animate__zoomIn" style="width: 100%; max-width: 480px;">
+        <div class="mb-4">
+            <div class="bg-white d-inline-block p-4 rounded-circle mb-3 shadow-lg"><i class="fas fa-crown fa-4x text-primary"></i></div>
+            <h1 class="fw-bold text-white mb-1">MACCA POS</h1>
+            <p class="text-white-50 fs-5">Selamat Datang di Lesehan Macca</p>
         </div>
-        <div class="d-grid gap-3">
-            <button onclick="handleLogin('KASIR')" class="btn-premium btn-blue py-3 shadow"><i class="fas fa-cash-register me-3"></i> AKSES KASIR</button>
-            <button onclick="handleLogin('ADMIN')" class="btn-premium btn-dark py-3 shadow"><i class="fas fa-user-shield me-3"></i> ADMINISTRATOR</button>
-        </div>
+        <input type="password" id="loginCode" class="login-input-code mb-4" maxlength="3" autofocus oninput="checkLogin(this.value)">
+        <p class="text-white-50"><i class="fas fa-lock me-2"></i>Silakan masukkan kode akses petugas</p>
+        <div id="loginStatus" class="text-warning fw-bold animate__animated animate__shakeX" style="display:none;">KODE TIDAK VALID!</div>
     </div>
 </div>
 
 <div id="main-app" style="display:none;">
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container-fluid">
-            <span class="navbar-brand"><i class="fas fa-utensils text-primary me-2"></i> LESEHAN MACCA</span>
-            <div class="d-flex gap-3">
-                <button class="btn btn-warning btn-sm rounded-pill fw-bold px-3 admin-only shadow-sm" data-bs-toggle="modal" data-bs-target="#adminModal" style="display:none;"><i class="fas fa-cog me-1"></i> ADMIN</button>
-                <button class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-sm" onclick="location.reload()"><i class="fas fa-power-off"></i></button>
+            <span class="navbar-brand fw-bold text-primary fs-3"><i class="fas fa-utensils me-2"></i>LESEHAN MACCA</span>
+            <ul class="nav nav-pills mx-auto">
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-kasir"><i class="fas fa-cash-register me-2"></i>KASIR</button></li>
+                <li class="nav-item ms-2"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-laporan" onclick="loadLaporan()"><i class="fas fa-chart-line me-2"></i>LAPORAN</button></li>
+            </ul>
+            <div class="d-flex align-items-center gap-3">
+                <div class="badge bg-light text-primary p-2 px-4 rounded-pill border fw-bold fs-6"><i class="fas fa-user-shield me-2"></i><span id="user-display">Petugas</span></div>
+                <button class="btn btn-warning btn-sm rounded-circle admin-only shadow-sm" data-bs-toggle="modal" data-bs-target="#adminModal" style="display:none; width:40px; height:40px;"><i class="fas fa-database"></i></button>
+                <button class="btn btn-outline-danger btn-sm rounded-circle" onclick="location.reload()" style="width:40px; height:40px;"><i class="fas fa-sign-out-alt"></i></button>
             </div>
         </div>
     </nav>
 
-    <div class="container-fluid mt-4 pb-5">
-        <div class="row g-4">
-            <div class="col-lg-8">
-                <div class="search-container mb-4 animate__animated animate__fadeIn">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="kasir-search" class="search-input" placeholder="Cari menu..." oninput="syncFilter()">
+    <div class="tab-content mt-4">
+        <div class="tab-pane fade show active" id="tab-kasir">
+            <div class="container-fluid px-4">
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="position-relative mb-4">
+                            <i class="fas fa-search position-absolute top-50 translate-middle-y ms-4 text-primary fs-5"></i>
+                            <input type="text" id="kasir-search" class="form-control rounded-pill border-0 shadow-sm p-4 ps-5 fw-bold" placeholder="Cari nama menu (contoh: Ikan, Ayam, Jus)..." onkeyup="syncFilter()">
+                        </div>
+                        <div class="category-scroll mb-4" id="cat-bar" style="display:flex; overflow-x:auto; gap:15px; padding-bottom:10px; scrollbar-width:none;"></div>
+                        <div id="menu-grid" class="row g-4"></div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="sticky-cart">
+                            <div class="glass-card p-4 shadow-lg bg-white h-100" style="border-top: 10px solid var(--primary-color);">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 class="fw-bold text-primary mb-0"><i class="fas fa-shopping-cart me-2"></i>PESANAN</h5>
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill fw-bold px-3" onclick="batalSemua()"><i class="fas fa-trash-alt me-1"></i>RESET</button>
+                                </div>
+                                <div class="btn-group w-100 mb-4 p-1 bg-light rounded-pill">
+                                    <input type="radio" class="btn-check" name="ordType" id="dine" checked onchange="updateUI()">
+                                    <label class="btn btn-light rounded-pill border-0 fw-bold py-2" for="dine"><i class="fas fa-store me-1"></i> DINE IN</label>
+                                    <input type="radio" class="btn-check" name="ordType" id="deliv" onchange="updateUI()">
+                                    <label class="btn btn-light rounded-pill border-0 fw-bold py-2" for="deliv"><i class="fas fa-truck me-1"></i> ANTAR</label>
+                                </div>
+                                <input type="text" id="custName" class="form-control rounded-pill border-0 bg-light p-3 fw-bold mb-3 shadow-sm" placeholder="Nama Pelanggan / Nomor Meja">
+                                <div id="deliv-panel" style="display:none;" class="animate__animated animate__fadeIn">
+                                    <input type="number" id="custWA" class="form-control rounded-pill mb-2 p-3 border-0 bg-light" placeholder="WhatsApp (62...)">
+                                    <textarea id="custAlamat" class="form-control rounded-4 mb-2 p-3 border-0 bg-light" placeholder="Alamat Pengiriman..."></textarea>
+                                    <div class="d-flex gap-2 mb-3">
+                                        <button class="btn btn-light flex-fill ongkir-btn btn-sm" id="ok-0" onclick="setOngkir(0, 'ok-0')">GRATIS</button>
+                                        <button class="btn btn-light flex-fill ongkir-btn btn-sm" id="ok-5" onclick="setOngkir(5000, 'ok-5')">5K</button>
+                                        <button class="btn btn-light flex-fill ongkir-btn btn-sm" id="ok-10" onclick="setOngkir(10000, 'ok-10')">10K</button>
+                                    </div>
+                                    <input type="number" id="ongkir-manual" class="form-control rounded-pill mb-3 p-3 border-0 bg-light" placeholder="Ongkir Custom Rp" oninput="manualOngkir()">
+                                </div>
+                                <div id="cart-list" class="mb-4" style="max-height: 250px; overflow-y: auto;"></div>
+                                <div class="p-4 rounded-4 shadow-sm mb-4 text-white text-center" id="total-card" style="background: var(--blue-gradient);">
+                                    <small class="opacity-75 fw-bold">TOTAL PEMBAYARAN</small>
+                                    <h2 class="fw-bold mb-0" id="total-price-text">Rp 0</h2>
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6"><input type="radio" class="btn-check" name="payMeth" id="pCash" checked onchange="togglePay()"><label class="btn btn-outline-success w-100 btn-premium py-3" for="pCash"><i class="fas fa-wallet"></i> TUNAI</label></div>
+                                    <div class="col-6"><input type="radio" class="btn-check" name="payMeth" id="pQRIS" onchange="togglePay()"><label class="btn btn-outline-secondary w-100 btn-premium py-3" for="pQRIS" data-bs-toggle="modal" data-bs-target="#qrisModal" onclick="prepareQRIS()"><i class="fas fa-qrcode"></i> QRIS</label></div>
+                                </div>
+                                <div id="cash-panel">
+                                    <div class="bg-light p-3 rounded-4 mb-4 border">
+                                        <input type="number" id="cash-amount" class="form-control form-control-lg text-center bg-transparent border-0 fw-bold" placeholder="Bayar Rp" oninput="calculateChange()">
+                                        <div class="receipt-dash my-2"></div>
+                                        <div class="d-flex justify-content-between text-success fw-bold px-1 fs-5"><span>KEMBALI</span><span id="change-text">Rp 0</span></div>
+                                    </div>
+                                </div>
+                                <button class="btn-premium btn-blue w-100 py-3 shadow-lg fs-5" onclick="submitAndPrint()"><i class="fas fa-print me-2"></i>CETAK STRUK</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="category-scroll mb-4" id="cat-bar" style="display:flex; overflow-x:auto; gap:12px; scrollbar-width:none;"></div>
-                
-                <div id="menu-grid" class="row g-4"></div>
             </div>
+        </div>
 
-            <div class="col-lg-4">
-                <div id="cart-container" class="cart-container dinein-theme animate__animated animate__fadeInRight">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-receipt me-2"></i>BILLING</h5>
-                        <button class="btn btn-sm text-danger fw-bold rounded-pill" onclick="batalSemua()"><i class="fas fa-trash-alt"></i></button>
-                    </div>
-
-                    <div class="btn-group w-100 mb-4 shadow-sm rounded-pill overflow-hidden bg-light p-1">
-                        <input type="radio" class="btn-check" name="ordType" id="dine" checked onchange="updateUI()">
-                        <label class="btn btn-light border-0 rounded-pill fw-bold" for="dine">DINE IN</label>
-                        <input type="radio" class="btn-check" name="ordType" id="deliv" onchange="updateUI()">
-                        <label class="btn btn-light border-0 rounded-pill fw-bold" for="deliv">ANTAR</label>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-0 ps-3"><i class="fas fa-user text-muted"></i></span>
-                            <input type="text" id="custName" class="form-control border-0 bg-white p-3 fw-bold" placeholder="Nama Pelanggan/Meja">
-                        </div>
-                    </div>
-
-                    <div id="deliv-panel" style="display:none;" class="animate__animated animate__fadeIn">
-                        <input type="number" id="custWA" class="form-control rounded-4 mb-2 p-3 border-0 bg-light" placeholder="WhatsApp (08...)">
-                        <textarea id="custAlamat" class="form-control rounded-4 mb-2 p-3 border-0 bg-light" placeholder="Alamat Lengkap..."></textarea>
-                        <input type="number" id="ongkir-manual" class="form-control rounded-pill p-3 border-0 bg-light" placeholder="Biaya Ongkir Rp" oninput="calculateTotal()">
-                    </div>
-
-                    <div id="cart-list" class="my-4" style="max-height: 280px; overflow-y: auto;"></div>
-
-                    <div class="p-4 rounded-4 shadow-lg mb-4 text-white text-center" id="total-card" style="background: var(--blue-gradient);">
-                        <small class="d-block opacity-75 fw-bold mb-1">TOTAL TAGIHAN</small>
-                        <h2 class="fw-bold mb-0" id="total-price-text">Rp 0</h2>
-                    </div>
-
-                    <div class="row g-2 mb-4">
-                        <div class="col-6">
-                            <input type="radio" class="btn-check" name="payMeth" id="pCash" checked onchange="toggleCashPanel()">
-                            <label class="btn btn-outline-success w-100 btn-premium fw-bold" for="pCash"><i class="fas fa-money-bill-wave me-2"></i>TUNAI</label>
-                        </div>
-                        <div class="col-6">
-                            <input type="radio" class="btn-check" name="payMeth" id="pQRIS" onchange="toggleCashPanel()">
-                            <label class="btn btn-outline-secondary w-100 btn-premium fw-bold" for="pQRIS" data-bs-toggle="modal" data-bs-target="#qrisModal" onclick="prepareQRIS()"><i class="fas fa-qrcode me-2"></i>QRIS</label>
-                        </div>
-                    </div>
-
-                    <div id="cash-panel" class="p-3 bg-light rounded-4 border-0 mb-4 text-center animate__animated animate__fadeIn">
-                        <small class="text-muted fw-bold">Nominal Tunai</small>
-                        <input type="number" id="cash-amount" class="form-control form-control-lg text-center bg-transparent border-0 fw-bold" placeholder="0" oninput="calculateChange()">
-                        <div class="d-flex justify-content-between text-success fw-bold px-3 mt-2">
-                            <span>KEMBALI:</span><span id="change-text">Rp 0</span>
-                        </div>
-                    </div>
-
-                    <button class="btn-premium btn-blue w-100 shadow-lg py-3 fs-5 fw-bold" onclick="submitAndPrint()">
-                        <i class="fas fa-print me-2"></i> CETAK STRUK
-                    </button>
+        <div class="tab-pane fade" id="tab-laporan">
+            <div class="container px-4 text-center py-5" id="laporan-loading">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 fw-bold">Memuat Data Laporan...</p>
+            </div>
+            <div class="container px-4" id="laporan-content" style="display:none;">
+                <div class="row g-4 mb-5">
+                    <div class="col-md-6"><div class="stat-card-premium" style="background: var(--blue-gradient);"><i class="fas fa-sack-dollar"></i><h5 class="opacity-75 mb-1">OMZET HARI INI</h5><h2 id="stat-income">Rp 0</h2><div class="badge bg-white bg-opacity-25 rounded-pill px-3 py-2 mt-2">Update Real-time</div></div></div>
+                    <div class="col-md-6"><div class="stat-card-premium" style="background: var(--gold-gradient); color: black;"><i class="fas fa-receipt"></i><h5 class="opacity-75 mb-1">TOTAL TRANSAKSI</h5><h2 id="stat-count">0</h2><div class="badge bg-black bg-opacity-10 rounded-pill px-3 py-2 mt-2">Pesanan Selesai</div></div></div>
                 </div>
+                <div class="glass-card p-5 bg-white shadow-sm border-0"><div class="table-responsive"><table class="table table-hover align-middle"><thead class="table-light"><tr><th class="border-0 p-3">WAKTU</th><th class="border-0 p-3">PELANGGAN</th><th class="border-0 p-3">MENU</th><th class="border-0 p-3 text-end">TOTAL</th><th class="border-0 p-3 text-center">KASIR</th></tr></thead><tbody id="laporan-body"></tbody></table></div></div>
             </div>
         </div>
     </div>
@@ -211,36 +184,34 @@
 
 <div class="modal fade" id="adminModal" tabindex="-1">
     <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content glass-card border-0">
-            <div class="modal-header border-0 p-4">
-                <h4 class="fw-bold mb-0 text-primary"><i class="fas fa-tools me-2"></i>Management Control</h4>
-                <button class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
+        <div class="modal-content glass-card border-0 overflow-hidden">
+            <div class="modal-header border-0 p-4 bg-light"><h4 class="fw-bold text-primary mb-0"><i class="fas fa-user-cog me-2"></i>ADMIN PANEL</h4><button class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body p-4">
-                <div class="row g-4">
-                    <div class="col-md-4 border-end">
-                        <div class="p-3 rounded-4 bg-white shadow-sm mb-4">
-                            <h6 class="fw-bold mb-3"><i class="fas fa-plus me-2 text-primary"></i>Menu Baru</h6>
-                            <input type="text" id="m_name" class="form-control rounded-pill mb-2" placeholder="Nama Menu">
-                            <input type="number" id="m_price" class="form-control rounded-pill mb-2" placeholder="Harga">
-                            <select id="m_cat_select" class="form-select rounded-pill mb-2"></select>
-                            <input type="file" id="m_file" class="form-control rounded-pill mb-3">
-                            <button class="btn-premium btn-blue w-100" id="btnSave" onclick="simpanMenu()"><i class="fas fa-cloud-upload-alt me-2"></i>SIMPAN</button>
-                        </div>
-                        <div class="p-3 rounded-4 bg-white shadow-sm">
-                            <h6 class="fw-bold mb-3"><i class="fas fa-folder-plus me-2 text-warning"></i>Kategori</h6>
-                            <div class="input-group">
-                                <input type="text" id="cat_input" class="form-control rounded-pill-start" placeholder="...">
-                                <button class="btn btn-primary rounded-pill-end" onclick="act_add_cat()"><i class="fas fa-save"></i></button>
-                            </div>
+                <ul class="nav nav-pills mb-4 gap-3">
+                    <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#adm-list"><i class="fas fa-list-ul me-2"></i>Daftar Menu</button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#adm-add" id="tab-trigger-add"><i class="fas fa-plus-circle me-2"></i>Menu Baru / Edit</button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#adm-cat"><i class="fas fa-tags me-2"></i>Kategori</button></li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="adm-list">
+                        <input type="text" id="admin-search" class="form-control rounded-pill p-3 px-4 border-0 bg-light mb-3" placeholder="Cari di database..." onkeyup="syncFilter()">
+                        <div id="admin-list" class="row g-2 overflow-auto" style="max-height: 400px;"></div>
+                    </div>
+                    <div class="tab-pane fade" id="adm-add">
+                        <div class="row g-3 p-4 bg-light rounded-4">
+                            <input type="hidden" id="m_id_edit">
+                            <div class="col-md-6"><label class="fw-bold small mb-1">Nama Menu</label><input type="text" id="m_name" class="form-control rounded-pill border-0 shadow-sm"></div>
+                            <div class="col-md-3"><label class="fw-bold small mb-1">Harga Rp</label><input type="number" id="m_price" class="form-control rounded-pill border-0 shadow-sm"></div>
+                            <div class="col-md-3"><label class="fw-bold small mb-1">Kategori</label><select id="m_cat_select" class="form-select rounded-pill border-0 shadow-sm"></select></div>
+                            <div class="col-md-12"><label class="fw-bold small mb-1">Foto Menu (File)</label><input type="file" id="m_file" class="form-control rounded-pill border-0 shadow-sm"></div>
+                            <button class="btn-premium btn-blue w-100 mt-3 py-3" onclick="simpanMenu()"><i class="fas fa-save me-2"></i>SIMPAN DATA MENU</button>
                         </div>
                     </div>
-                    <div class="col-md-8">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-database me-2"></i>Database Produk</h6>
-                            <input type="text" id="admin-search" class="form-control rounded-pill w-50 shadow-sm" placeholder="Cari..." oninput="syncFilter()">
+                    <div class="tab-pane fade" id="adm-cat">
+                        <div class="p-5 bg-light rounded-4 text-center">
+                            <h6 class="fw-bold mb-4">TAMBAH KATEGORI BARU</h6>
+                            <div class="input-group justify-content-center shadow-sm rounded-pill overflow-hidden" style="max-width: 500px; margin: 0 auto;"><input type="text" id="cat_input" class="form-control border-0 p-3" placeholder="Nama Kategori"><button class="btn btn-primary px-4" onclick="addCat()"><i class="fas fa-plus"></i></button></div>
                         </div>
-                        <div id="admin-list" class="row overflow-auto pe-2" style="max-height: 500px;"></div>
                     </div>
                 </div>
             </div>
@@ -248,34 +219,23 @@
     </div>
 </div>
 
-<div class="modal fade" id="editModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content glass-card p-4">
-            <h5 class="fw-bold text-center mb-4"><i class="fas fa-edit me-2"></i>Edit Detail Menu</h5>
-            <input type="hidden" id="edit-id">
-            <div class="mb-2"><label class="small fw-bold ms-2">Nama</label><input type="text" id="edit-name" class="form-control rounded-pill"></div>
-            <div class="mb-2"><label class="small fw-bold ms-2">Harga</label><input type="number" id="edit-price" class="form-control rounded-pill"></div>
-            <div class="mb-4"><label class="small fw-bold ms-2">Kategori</label><select id="edit-cat" class="form-select rounded-pill"></select></div>
-            <button class="btn-premium btn-blue w-100 py-3" onclick="updateMenuAction()"><i class="fas fa-check-circle me-2"></i>PERBARUI DATA</button>
-        </div>
-    </div>
-</div>
+<div id="print-area"></div>
 
 <div class="modal fade" id="qrisModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content glass-card p-5 text-center shadow-lg">
-            <h5 class="fw-bold mb-4">E-Payment QRIS</h5>
-            <div class="p-4 rounded-4 mb-4" style="background: var(--glass-dark); border: 2px dashed var(--primary-color);">
-                <small class="text-muted d-block fw-bold">TOTAL BAYAR</small>
-                <h2 class="fw-bold text-primary mb-0" id="qris-nominal-text">Rp 0</h2>
+        <div class="modal-content glass-card text-center p-5">
+            <h6 class="text-muted small">JUMLAH TAGIHAN</h6>
+            <h2 class="fw-bold text-primary mb-2" id="qris-nominal-text">Rp 0</h2>
+            <div class="mb-3">
+                <span class="badge bg-primary px-3 py-2 rounded-pill"><i class="fas fa-university me-2"></i>BANK BRI</span><br>
+                <small class="fw-bold text-dark d-block mt-2">No. Rek: 1234-5678-9012-345</small>
+                <small class="text-muted">A.N Lesehan Macca</small>
             </div>
-            <img src="https://i.ibb.co.com/mC8SDk1j/Whats-App-Image-2026-01-01-at-16-20-37.jpg" class="img-fluid rounded-4 shadow-lg mb-4" style="max-width: 220px;">
-            <button class="btn-premium btn-blue w-100 py-3" data-bs-dismiss="modal"><i class="fas fa-check-double me-2"></i>KONFIRMASI BAYAR</button>
+            <img src="https://i.ibb.co.com/mC8SDk1j/Whats-App-Image-2026-01-01-at-16-20-37.jpg" class="img-fluid rounded-4 shadow mb-4" style="max-width:260px">
+            <button class="btn-premium btn-blue w-100" data-bs-dismiss="modal"><i class="fas fa-check-double"></i> KONFIRMASI LUNAS</button>
         </div>
     </div>
 </div>
-
-<div id="print-area"></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -290,59 +250,82 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, timerProgressBar: true });
 
-    let masterMenu = [];
-    let activeFilter = "Semua";
-    let cart = [];
-    let currentTotal = 0;
+    let masterMenu = []; let cart = []; let activeFilter = "Semua"; let currentTotal = 0;
 
-    window.handleLogin = (role) => {
-        document.getElementById('login-screen').classList.add('animate__animated', 'animate__fadeOut');
+    // LOGIN LOGIC
+    window.checkLogin = (code) => {
+        if(code === '3') login('KASIR ARA', false);
+        else if(code === '4') login('KASIR DILLA', false);
+        else if(code === '100') login('ADMIN', true);
+        else if(code.length >= 3) { 
+            document.getElementById('loginStatus').style.display='block'; 
+            document.getElementById('loginCode').value=''; 
+        }
+    };
+
+    function login(user, admin) {
+        document.getElementById('user-display').innerText = user;
+        document.getElementById('login-screen').classList.add('animate__animated', 'animate__fadeOutDown');
         setTimeout(() => {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
-            if(role === 'ADMIN') document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'inline-block');
+            if(admin) document.querySelectorAll('.admin-only').forEach(e => e.style.display='block');
             syncData();
-        }, 500);
-    };
+            Toast.fire({ icon: 'success', title: `Selamat Datang, ${user}!` });
+        }, 600);
+    }
 
+    // SYNC DATA DARI FIREBASE
     function syncData() {
+        // Listen Kategori
         onValue(ref(db, 'kategori'), (snap) => {
-            const data = snap.val();
-            const bar = document.getElementById('cat-bar');
-            const s1 = document.getElementById('m_cat_select');
-            const s2 = document.getElementById('edit-cat');
-            bar.innerHTML = `<button class="category-btn ${activeFilter==='Semua'?'active':''}" onclick="setFilter('Semua')">SEMUA</button>`;
-            s1.innerHTML = ''; s2.innerHTML = '';
-            if(data) Object.values(data).forEach(c => {
-                bar.innerHTML += `<button class="category-btn ${activeFilter===c?'active':''}" onclick="setFilter('${c}')">${c.toUpperCase()}</button>`;
-                s1.innerHTML += `<option value="${c}">${c}</option>`;
-                s2.innerHTML += `<option value="${c}">${c}</option>`;
-            });
+            renderCategoryBar(snap.val());
         });
-
+        
+        // Listen Master Menu
         onValue(ref(db, 'master_menu'), (snap) => {
-            const data = snap.val();
-            masterMenu = data ? Object.keys(data).map(id => ({...data[id], id})) : [];
-            syncFilter();
+            masterMenu = [];
+            if(snap.val()){
+                masterMenu = Object.keys(snap.val()).map(id => ({...snap.val()[id], id}));
+            }
+            syncFilter(); // Re-render grid setiap kali data master berubah
         });
     }
 
-    window.syncFilter = () => {
-        const qK = document.getElementById('kasir-search').value.toLowerCase();
-        const qA = document.getElementById('admin-search').value.toLowerCase();
-        renderKasir(qK);
-        renderAdmin(qA);
-    };
+    function renderCategoryBar(data) {
+        const bar = document.getElementById('cat-bar');
+        const sel = document.getElementById('m_cat_select');
+        bar.innerHTML = `<button class="category-btn ${activeFilter==='Semua'?'active':''}" onclick="setFilter('Semua')"><i class="fas fa-grip-horizontal me-2"></i>SEMUA</button>`;
+        sel.innerHTML = '';
+        
+        if(data) {
+            Object.values(data).forEach(c => {
+                bar.innerHTML += `<button class="category-btn ${activeFilter===c?'active':''}" onclick="setFilter('${c}')">${c.toUpperCase()}</button>`;
+                sel.innerHTML += `<option value="${c}">${c}</option>`;
+            });
+        }
+    }
 
-    function renderKasir(q) {
-        const grid = document.getElementById('menu-grid'); grid.innerHTML = '';
-        masterMenu.filter(m => (activeFilter==="Semua"||m.category===activeFilter) && m.name.toLowerCase().includes(q)).forEach(m => {
+    // LOGIKA FILTER DAN SEARCH (PERBAIKAN UTAMA)
+    window.syncFilter = () => {
+        const queryText = document.getElementById('kasir-search').value.toLowerCase().trim();
+        const grid = document.getElementById('menu-grid');
+        
+        // Filter Data Master Berdasarkan Kategori DAN Pencarian
+        const filtered = masterMenu.filter(m => {
+            const matchCategory = (activeFilter === 'Semua' || m.category === activeFilter);
+            const matchSearch = m.name.toLowerCase().includes(queryText);
+            return matchCategory && matchSearch;
+        });
+
+        grid.innerHTML = filtered.length > 0 ? filtered.map(m => {
             const isHabis = m.status === 'HABIS';
-            grid.innerHTML += `
-                <div class="col-6 col-md-4 col-xl-3 animate__animated animate__fadeInUp">
-                    <div class="card card-menu shadow-sm ${isHabis?'habis':''}" onclick="${isHabis?'':'addToCart(\''+m.name+'\','+m.price+')'}">
-                        ${isHabis?'<div class="habis-tag">HABIS</div>':''}
+            return `
+                <div class="col-6 col-md-4 col-xl-3 animate__animated animate__fadeIn">
+                    <div class="card card-menu ${isHabis ? 'habis' : ''}" onclick="${isHabis ? '' : 'addToCart(\''+m.name+'\','+m.price+')'}">
+                        ${isHabis ? '<div class="habis-tag">HABIS</div>' : ''}
                         <img src="${m.image}" class="menu-img">
                         <div class="p-3 text-center">
                             <h6 class="fw-bold mb-2 text-truncate">${m.name}</h6>
@@ -350,69 +333,43 @@
                         </div>
                     </div>
                 </div>`;
+        }).join('') : `<div class="col-12 text-center py-5 text-muted"><i class="fas fa-search fa-3x mb-3"></i><h5>Menu "${queryText}" tidak ditemukan...</h5></div>`;
+
+        // Update Admin List
+        const queryAdmin = document.getElementById('admin-search').value.toLowerCase();
+        const adminList = document.getElementById('admin-list');
+        adminList.innerHTML = masterMenu.filter(m => m.name.toLowerCase().includes(queryAdmin)).map(m => `
+            <div class="col-12"><div class="d-flex align-items-center justify-content-between bg-white p-3 rounded-4 border">
+                <div class="d-flex align-items-center"><img src="${m.image}" style="width:40px;height:40px;border-radius:10px;object-fit:cover" class="me-3">
+                <div><strong class="d-block">${m.name}</strong><small class="text-primary fw-bold">${m.category} - Rp ${m.price.toLocaleString()}</small></div></div>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="form-check form-switch me-2"><input class="form-check-input" type="checkbox" ${m.status!=='HABIS'?'checked':''} onchange="toggleStatus('${m.id}', this.checked)"></div>
+                    <button class="btn btn-sm btn-outline-primary" onclick="editMenu('${m.id}')"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="hapusMenu('${m.id}')"><i class="fas fa-trash"></i></button>
+                </div>
+            </div></div>`).join('');
+    };
+
+    window.setFilter = (f) => { 
+        activeFilter = f; 
+        // Update class active secara manual untuk kecepatan UI
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if(btn.innerText.includes(f.toUpperCase())) btn.classList.add('active');
         });
-    }
-
-    function renderAdmin(q) {
-        const list = document.getElementById('admin-list'); list.innerHTML = '';
-        masterMenu.filter(m => m.name.toLowerCase().includes(q)).forEach(m => {
-            list.innerHTML += `
-                <div class="col-12">
-                    <div class="admin-item d-flex align-items-center justify-content-between shadow-sm">
-                        <div class="d-flex align-items-center">
-                            <img src="${m.image}" style="width:45px;height:45px;border-radius:12px;object-fit:cover" class="me-3 shadow-sm">
-                            <div><strong class="d-block text-dark">${m.name}</strong><small class="text-muted">${m.category} • Rp ${m.price.toLocaleString()}</small></div>
-                        </div>
-                        <div class="d-flex gap-2 align-items-center">
-                            <div class="form-check form-switch me-2">
-                                <input class="form-check-input" type="checkbox" ${m.status!=='HABIS'?'checked':''} onchange="toggleStatus('${m.id}', this.checked)">
-                            </div>
-                            <button class="btn btn-sm btn-outline-primary rounded-circle" onclick="openEdit('${m.id}','${m.name}',${m.price},'${m.category}')"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-sm btn-outline-danger rounded-circle" onclick="hapusMenu('${m.id}')"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-                </div>`;
-        });
-    }
-
-    window.toggleStatus = (id, ready) => update(ref(db, `master_menu/${id}`), {status: ready?'READY':'HABIS'});
-    window.hapusMenu = (id) => confirm("Hapus menu ini?") && remove(ref(db, `master_menu/${id}`));
-    window.openEdit = (id, n, p, c) => {
-        document.getElementById('edit-id').value = id;
-        document.getElementById('edit-name').value = n;
-        document.getElementById('edit-price').value = p;
-        document.getElementById('edit-cat').value = c;
-        new bootstrap.Modal(document.getElementById('editModal')).show();
-    };
-    window.updateMenuAction = () => {
-        update(ref(db, `master_menu/${document.getElementById('edit-id').value}`), {
-            name: document.getElementById('edit-name').value,
-            price: parseInt(document.getElementById('edit-price').value),
-            category: document.getElementById('edit-cat').value
-        }).then(() => bootstrap.Modal.getInstance(document.getElementById('editModal')).hide());
+        syncFilter(); 
     };
 
-    window.setFilter = (f) => { activeFilter = f; syncData(); };
-    window.updateUI = () => {
-        const d = document.getElementById('deliv').checked;
-        document.getElementById('cart-container').className = "cart-container " + (d?"antar-theme":"dinein-theme");
-        document.getElementById('total-card').style.background = d ? "var(--gold-gradient)" : "var(--blue-gradient)";
-        document.getElementById('deliv-panel').style.display = d ? 'block' : 'none';
-        calculateTotal();
-    };
-
-    window.addToCart = (n, p) => { cart.push({n, p}); renderCart(); };
-    window.rmvCart = (i) => { cart.splice(i, 1); renderCart(); };
-    window.batalSemua = () => { if(confirm("Reset Billing?")) { cart = []; renderCart(); } };
-
-    function renderCart() {
+    // CART LOGIC
+    window.addToCart = (n, p) => { cart.push({n, p}); renderCart(); Toast.fire({ icon: 'info', title: 'Item masuk keranjang' }); };
+    window.renderCart = () => {
         document.getElementById('cart-list').innerHTML = cart.map((it, i) => `
-            <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded-4 mb-2 shadow-sm border-0">
-                <div><span class="fw-bold d-block" style="font-size:0.85rem">${it.n}</span><small class="text-primary fw-bold">Rp ${it.p.toLocaleString()}</small></div>
+            <div class="d-flex justify-content-between bg-light p-3 rounded-4 mb-2">
+                <div><span class="fw-bold d-block small">${it.n}</span><small class="text-primary">Rp ${it.p.toLocaleString()}</small></div>
                 <button class="btn btn-sm text-danger" onclick="rmvCart(${i})"><i class="fas fa-times-circle"></i></button>
             </div>`).join('');
         calculateTotal();
-    }
+    };
 
     window.calculateTotal = () => {
         let sub = cart.reduce((a, b) => a + b.p, 0);
@@ -421,67 +378,152 @@
         document.getElementById('total-price-text').innerText = "Rp " + currentTotal.toLocaleString();
     };
 
-    window.calculateChange = () => {
-        const p = parseInt(document.getElementById('cash-amount').value) || 0;
-        document.getElementById('change-text').innerText = "Rp " + (p - currentTotal > 0 ? (p - currentTotal).toLocaleString() : 0);
+    window.setOngkir = (val, btnId) => {
+        document.getElementById('ongkir-manual').value = val;
+        document.querySelectorAll('.ongkir-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(btnId).classList.add('active');
+        calculateTotal();
     };
 
-    window.toggleCashPanel = () => document.getElementById('cash-panel').style.display = document.getElementById('pQRIS').checked ? 'none' : 'block';
-    window.prepareQRIS = () => document.getElementById('qris-nominal-text').innerText = "Rp " + currentTotal.toLocaleString();
+    window.manualOngkir = () => {
+        document.querySelectorAll('.ongkir-btn').forEach(b => b.classList.remove('active'));
+        calculateTotal();
+    };
 
+    // TRANSAKSI & PRINT
     window.submitAndPrint = async () => {
         const n = document.getElementById('custName').value;
-        if(!n || cart.length === 0) return alert("Nama & Pesanan wajib diisi!");
+        const u = document.getElementById('user-display').innerText;
+        if(!n || cart.length === 0) return Swal.fire('Error', 'Lengkapi Nama & Pesanan', 'error');
         
+        const pay = parseInt(document.getElementById('cash-amount').value) || 0;
+        const kembalian = pay - currentTotal;
+        const isQRIS = document.getElementById('pQRIS').checked;
+
+        if(!isQRIS && pay < currentTotal) return Swal.fire('Error', 'Uang pembayaran kurang', 'warning');
+
         document.getElementById('print-area').innerHTML = `
-            <div style="width:58mm; font-family:monospace; font-size:10px; text-align:center">
-                <b>LESEHAN MACCA</b><br>${new Date().toLocaleString()}<hr>
-                PLG: ${n}<br>TIPE: ${document.getElementById('deliv').checked?'ANTAR':'DINE-IN'}<hr>
-                ${cart.map(it => `<div>${it.n} - ${it.p.toLocaleString()}</div>`).join('')}<hr>
-                <b>TOTAL: Rp ${currentTotal.toLocaleString()}</b><br>
-                BYR: ${document.getElementById('pQRIS').checked?'QRIS':'TUNAI'}<hr>
-                Terima Kasih!
+            <div style="width:58mm; padding:5mm; font-family:monospace; font-size:11px;">
+                <center><b>LESEHAN MACCA</b><br><small>Bulukumba</small></center>
+                <hr style="border-top:1px dashed #000">
+                <div style="display:flex; justify-content:space-between"><span>Tgl:</span><span>${new Date().toLocaleDateString()}</span></div>
+                <div style="display:flex; justify-content:space-between"><span>Plg:</span><span>${n.toUpperCase()}</span></div>
+                <hr style="border-top:1px dashed #000">
+                ${cart.map(i => `<div style="display:flex; justify-content:space-between"><span>${i.n}</span><span>${i.p.toLocaleString()}</span></div>`).join('')}
+                <hr style="border-top:1px dashed #000">
+                <div style="display:flex; justify-content:space-between; font-weight:bold"><span>TOTAL:</span><span>${currentTotal.toLocaleString()}</span></div>
+                <div style="display:flex; justify-content:space-between"><span>Bayar:</span><span>${isQRIS ? 'QRIS' : pay.toLocaleString()}</span></div>
+                ${!isQRIS ? `<div style="display:flex; justify-content:space-between"><span>Kembali:</span><span>${kembalian.toLocaleString()}</span></div>` : ''}
+                <hr style="border-top:1px dashed #000">
+                <center><small>Terima Kasih</small></center>
             </div>`;
-        
-        await push(ref(db, 'transaksi'), { name: n, items: cart, total: currentTotal, time: new Date().toISOString() });
+
+        await push(ref(db, 'transaksi'), { name: n, items: cart, total: currentTotal, time: new Date().toISOString(), user: u });
         window.print();
-        cart = []; document.getElementById('custName').value = ""; document.getElementById('cash-amount').value = ""; renderCart();
+        batalSemua();
+        Toast.fire({ icon: 'success', title: 'Berhasil Dicetak' });
+    };
+
+    // LAPORAN LOGIC
+    window.loadLaporan = () => {
+        document.getElementById('laporan-loading').style.display = 'block';
+        document.getElementById('laporan-content').style.display = 'none';
+        
+        onValue(ref(db, 'transaksi'), (snap) => {
+            let html = '', totalIncome = 0, count = 0;
+            if(snap.val()) {
+                const data = Object.values(snap.val()).reverse();
+                data.forEach(x => {
+                    totalIncome += x.total; count++;
+                    html += `<tr><td><small>${new Date(x.time).toLocaleString()}</small></td><td class="fw-bold">${x.name}</td><td><small>${x.items.map(i=>i.n).join(', ')}</small></td><td class="text-end fw-bold text-primary">Rp ${x.total.toLocaleString()}</td><td class="text-center"><span class="badge bg-primary px-3">${x.user}</span></td></tr>`;
+                });
+            }
+            document.getElementById('laporan-body').innerHTML = html;
+            document.getElementById('stat-income').innerText = "Rp " + totalIncome.toLocaleString();
+            document.getElementById('stat-count').innerText = count;
+            document.getElementById('laporan-loading').style.display = 'none';
+            document.getElementById('laporan-content').style.display = 'block';
+        });
+    };
+
+    window.batalSemua = () => { 
+        cart = []; 
+        document.getElementById('custName').value=''; 
+        document.getElementById('cash-amount').value=''; 
+        document.getElementById('ongkir-manual').value='';
+        document.querySelectorAll('.ongkir-btn').forEach(b => b.classList.remove('active'));
+        renderCart(); 
+    };
+
+    // ADMIN FUNCTIONS
+    window.editMenu = (id) => {
+        const m = masterMenu.find(item => item.id === id);
+        if(m) {
+            document.getElementById('m_id_edit').value = m.id;
+            document.getElementById('m_name').value = m.name;
+            document.getElementById('m_price').value = m.price;
+            document.getElementById('m_cat_select').value = m.category;
+            document.getElementById('tab-trigger-add').click();
+        }
     };
 
     window.simpanMenu = () => {
-        const f = document.getElementById('m_file').files[0]; if(!f) return;
-        const r = new FileReader(); r.readAsDataURL(f);
-        r.onload = (e) => {
-            const img = new Image(); img.src = e.target.result;
-            img.onload = () => {
-                const c = document.createElement('canvas'); c.width = 400; c.height = 300;
-                c.getContext('2d').drawImage(img,0,0,400,300);
-                push(ref(db, 'master_menu'), {
-                    name: document.getElementById('m_name').value,
-                    price: parseInt(document.getElementById('m_price').value),
-                    category: document.getElementById('m_cat_select').value,
-                    image: c.toDataURL('image/jpeg', 0.6),
-                    status: 'READY'
-                }).then(() => { document.getElementById('m_name').value=''; document.getElementById('m_price').value=''; });
+        const id = document.getElementById('m_id_edit').value;
+        const name = document.getElementById('m_name').value;
+        const price = parseInt(document.getElementById('m_price').value);
+        const category = document.getElementById('m_cat_select').value;
+        const fileInput = document.getElementById('m_file');
+
+        if(!name || !price) return Swal.fire('Error', 'Nama & Harga harus diisi', 'error');
+
+        const processSave = (imgData = null) => {
+            const data = { name, price, category, status: 'READY' };
+            if(imgData) data.image = imgData;
+
+            if(id) {
+                update(ref(db, `master_menu/${id}`), data).then(() => {
+                    resetForm(); Toast.fire({icon:'success', title:'Menu Terupdate'});
+                });
+            } else {
+                if(!imgData) return Swal.fire('Error', 'Foto wajib untuk menu baru', 'error');
+                push(ref(db, 'master_menu'), data).then(() => {
+                    resetForm(); Toast.fire({icon:'success', title:'Menu Berhasil Ditambah'});
+                });
             }
+        };
+
+        if(fileInput.files[0]) {
+            const r = new FileReader();
+            r.readAsDataURL(fileInput.files[0]);
+            r.onload = (e) => processSave(e.target.result);
+        } else {
+            processSave();
         }
     };
-    window.act_add_cat = () => {
-        const v = document.getElementById('cat_input').value;
-        if(v) push(ref(db, 'kategori'), v).then(() => document.getElementById('cat_input').value='');
+
+    function resetForm() {
+        document.getElementById('m_id_edit').value = '';
+        document.getElementById('m_name').value = '';
+        document.getElementById('m_price').value = '';
+        document.getElementById('m_file').value = '';
+    }
+
+    window.rmvCart = (i) => { cart.splice(i, 1); renderCart(); };
+    window.updateUI = () => { 
+        document.getElementById('deliv-panel').style.display = document.getElementById('deliv').checked ? 'block' : 'none'; 
+        calculateTotal(); 
     };
+    window.calculateChange = () => { 
+        const p = parseInt(document.getElementById('cash-amount').value) || 0; 
+        document.getElementById('change-text').innerText = "Rp " + (p - currentTotal > 0 ? (p - currentTotal).toLocaleString() : 0); 
+    };
+    window.togglePay = () => document.getElementById('cash-panel').style.display = document.getElementById('pQRIS').checked ? 'none' : 'block';
+    window.prepareQRIS = () => document.getElementById('qris-nominal-text').innerText = "Rp " + currentTotal.toLocaleString();
+    window.addCat = () => { const v = document.getElementById('cat_input').value; if(v) push(ref(db, 'kategori'), v).then(() => { document.getElementById('cat_input').value=''; Toast.fire({icon:'success', title:'Kategori Ditambah'}); }); };
+    window.toggleStatus = (id, r) => update(ref(db, `master_menu/${id}`), {status: r?'READY':'HABIS'});
+    window.hapusMenu = (id) => Swal.fire({title:'Hapus menu ini?', icon:'warning', showCancelButton:true, confirmButtonColor:'#d33'}).then(res => res.isConfirmed && remove(ref(db, `master_menu/${id}`)));
+
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<style>
-    .category-btn { 
-        white-space: nowrap; padding: 12px 24px; border-radius: 18px; 
-        background: white; border: 1px solid rgba(0,0,0,0.05); font-weight: 700; color: #666; transition: 0.3s;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.02);
-    }
-    .category-btn.active { background: var(--primary-color); color: white; transform: scale(1.05); box-shadow: 0 10px 20px rgba(0,74,173,0.15); }
-    .form-control:focus { box-shadow: none; border-color: var(--primary-color); }
-</style>
-
 </body>
 </html>
