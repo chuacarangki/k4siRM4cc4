@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MACCA POS - Premium Locked Edition</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <style>
+        :root {
+            --primary-color: #004aad;
+            --accent-color: #ffbd59;
+            --glass: rgba(255, 255, 255, 0.9);
+            --glass-dark: rgba(0, 74, 173, 0.05);
+            --gold-gradient: linear-gradient(135deg, #ffbd59 0%, #ff9100 100%);
+            --blue-gradient: linear-gradient(135deg, #004aad 0%, #041d3d 100%);
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f4f7fa; 
+            color: #1a1a1a;
+            transition: 0.5s ease;
+        }
+
+        /* UI LOCK: Glassmorphism Core */
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 30px;
+        }
+
+        /* Navbar Style */
+        .navbar { 
+            background: white !important; 
+            padding: 18px 30px; 
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 4px 30px rgba(0,0,0,0.03);
+        }
+        .navbar-brand { font-weight: 800; color: var(--primary-color) !important; letter-spacing: -1px; font-size: 1.5rem; }
+
+        /* Search Box Premium */
+        .search-container { position: relative; }
+        .search-input {
+            border-radius: 20px; border: 2px solid transparent; padding: 15px 25px 15px 55px;
+            width: 100%; transition: 0.4s; font-weight: 600; background: white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        .search-input:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 10px 30px rgba(0,74,173,0.1); }
+        .search-icon { position: absolute; left: 22px; top: 50%; transform: translateY(-50%); color: var(--primary-color); font-size: 1.2rem; }
+
+        /* Menu Card Logic */
+        .card-menu { 
+            border: none; border-radius: 28px; overflow: hidden; background: white; 
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; position: relative;
+        }
+        .card-menu:hover { transform: translateY(-12px); box-shadow: 0 25px 50px rgba(0,0,0,0.12); }
+        .menu-img { width: 100%; height: 180px; object-fit: cover; }
+        .price-badge { background: var(--gold-gradient); color: #000; padding: 6px 18px; border-radius: 14px; font-weight: 800; font-size: 0.85rem; }
+        
+        /* Status Habis Visual */
+        .card-menu.habis { opacity: 0.6; filter: grayscale(1); }
+        .habis-tag {
+            position: absolute; top: 15px; right: 15px; background: #ef4444; color: white;
+            padding: 4px 12px; border-radius: 10px; font-weight: 800; font-size: 0.7rem; z-index: 2;
+        }
+
+        /* Cart & Sidebar */
+        .cart-container { 
+            border-radius: 35px; padding: 30px; position: sticky; top: 25px; transition: 0.5s;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08); background: white; border: 1px solid rgba(255,255,255,0.8);
+        }
+        .cart-container.dinein-theme { border-top: 10px solid var(--primary-color); }
+        .cart-container.antar-theme { border-top: 10px solid var(--accent-color); }
+
+        .btn-premium { border-radius: 20px; padding: 15px 25px; font-weight: 700; transition: 0.4s; border: none; display: flex; align-items: center; justify-content: center; }
+        .btn-blue { background: var(--blue-gradient); color: white; }
+        .btn-blue:hover { transform: scale(1.02); box-shadow: 0 10px 20px rgba(0,74,173,0.3); }
+        .btn-gold { background: var(--gold-gradient); color: black; }
+
+        /* Login Screen Premium */
+        #login-screen { 
+            height: 100vh; display: flex; align-items: center; justify-content: center; 
+            background: var(--blue-gradient); position: relative; overflow: hidden;
+        }
+        #login-screen::before {
+            content: ''; position: absolute; width: 300px; height: 300px; background: rgba(255,189,89,0.1);
+            filter: blur(80px); border-radius: 50%; top: -50px; right: -50px;
+        }
+
+        /* Admin UI Fixes */
+        .admin-item { background: rgba(255,255,255,0.7); border-radius: 22px; padding: 18px; margin-bottom: 12px; border: 1px solid rgba(0,0,0,0.03); transition: 0.3s; }
+        .admin-item:hover { background: white; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+
+        @media print {
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
+        }
+        #print-area { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="login-screen">
+    <div class="login-card glass-card p-5 text-center animate__animated animate__zoomIn shadow-lg" style="width: 100%; max-width: 420px;">
+        <div class="mb-5">
+            <div class="bg-white d-inline-block p-4 rounded-circle mb-4 shadow-lg">
+                <i class="fas fa-crown fa-3x text-primary"></i>
+            </div>
+            <h1 class="fw-bold text-dark mb-1">MACCA POS</h1>
+            <p class="text-muted fw-semibold">Exclusive Management System</p>
+        </div>
+        <div class="d-grid gap-3">
+            <button onclick="handleLogin('KASIR')" class="btn-premium btn-blue py-3 shadow"><i class="fas fa-cash-register me-3"></i> AKSES KASIR</button>
+            <button onclick="handleLogin('ADMIN')" class="btn-premium btn-dark py-3 shadow"><i class="fas fa-user-shield me-3"></i> ADMINISTRATOR</button>
+        </div>
+    </div>
+</div>
+
+<div id="main-app" style="display:none;">
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid">
+            <span class="navbar-brand"><i class="fas fa-utensils text-primary me-2"></i> LESEHAN MACCA</span>
+            <div class="d-flex gap-3">
+                <button class="btn btn-warning btn-sm rounded-pill fw-bold px-3 admin-only shadow-sm" data-bs-toggle="modal" data-bs-target="#adminModal" style="display:none;"><i class="fas fa-cog me-1"></i> ADMIN</button>
+                <button class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-sm" onclick="location.reload()"><i class="fas fa-power-off"></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4 pb-5">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="search-container mb-4 animate__animated animate__fadeIn">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="kasir-search" class="search-input" placeholder="Cari menu..." oninput="syncFilter()">
+                </div>
+                
+                <div class="category-scroll mb-4" id="cat-bar" style="display:flex; overflow-x:auto; gap:12px; scrollbar-width:none;"></div>
+                
+                <div id="menu-grid" class="row g-4"></div>
+            </div>
+
+            <div class="col-lg-4">
+                <div id="cart-container" class="cart-container dinein-theme animate__animated animate__fadeInRight">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-receipt me-2"></i>BILLING</h5>
+                        <button class="btn btn-sm text-danger fw-bold rounded-pill" onclick="batalSemua()"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+
+                    <div class="btn-group w-100 mb-4 shadow-sm rounded-pill overflow-hidden bg-light p-1">
+                        <input type="radio" class="btn-check" name="ordType" id="dine" checked onchange="updateUI()">
+                        <label class="btn btn-light border-0 rounded-pill fw-bold" for="dine">DINE IN</label>
+                        <input type="radio" class="btn-check" name="ordType" id="deliv" onchange="updateUI()">
+                        <label class="btn btn-light border-0 rounded-pill fw-bold" for="deliv">ANTAR</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-0 ps-3"><i class="fas fa-user text-muted"></i></span>
+                            <input type="text" id="custName" class="form-control border-0 bg-white p-3 fw-bold" placeholder="Nama Pelanggan/Meja">
+                        </div>
+                    </div>
+
+                    <div id="deliv-panel" style="display:none;" class="animate__animated animate__fadeIn">
+                        <input type="number" id="custWA" class="form-control rounded-4 mb-2 p-3 border-0 bg-light" placeholder="WhatsApp (08...)">
+                        <textarea id="custAlamat" class="form-control rounded-4 mb-2 p-3 border-0 bg-light" placeholder="Alamat Lengkap..."></textarea>
+                        <input type="number" id="ongkir-manual" class="form-control rounded-pill p-3 border-0 bg-light" placeholder="Biaya Ongkir Rp" oninput="calculateTotal()">
+                    </div>
+
+                    <div id="cart-list" class="my-4" style="max-height: 280px; overflow-y: auto;"></div>
+
+                    <div class="p-4 rounded-4 shadow-lg mb-4 text-white text-center" id="total-card" style="background: var(--blue-gradient);">
+                        <small class="d-block opacity-75 fw-bold mb-1">TOTAL TAGIHAN</small>
+                        <h2 class="fw-bold mb-0" id="total-price-text">Rp 0</h2>
+                    </div>
+
+                    <div class="row g-2 mb-4">
+                        <div class="col-6">
+                            <input type="radio" class="btn-check" name="payMeth" id="pCash" checked onchange="toggleCashPanel()">
+                            <label class="btn btn-outline-success w-100 btn-premium fw-bold" for="pCash"><i class="fas fa-money-bill-wave me-2"></i>TUNAI</label>
+                        </div>
+                        <div class="col-6">
+                            <input type="radio" class="btn-check" name="payMeth" id="pQRIS" onchange="toggleCashPanel()">
+                            <label class="btn btn-outline-secondary w-100 btn-premium fw-bold" for="pQRIS" data-bs-toggle="modal" data-bs-target="#qrisModal" onclick="prepareQRIS()"><i class="fas fa-qrcode me-2"></i>QRIS</label>
+                        </div>
+                    </div>
+
+                    <div id="cash-panel" class="p-3 bg-light rounded-4 border-0 mb-4 text-center animate__animated animate__fadeIn">
+                        <small class="text-muted fw-bold">Nominal Tunai</small>
+                        <input type="number" id="cash-amount" class="form-control form-control-lg text-center bg-transparent border-0 fw-bold" placeholder="0" oninput="calculateChange()">
+                        <div class="d-flex justify-content-between text-success fw-bold px-3 mt-2">
+                            <span>KEMBALI:</span><span id="change-text">Rp 0</span>
+                        </div>
+                    </div>
+
+                    <button class="btn-premium btn-blue w-100 shadow-lg py-3 fs-5 fw-bold" onclick="submitAndPrint()">
+                        <i class="fas fa-print me-2"></i> CETAK STRUK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="adminModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content glass-card border-0">
+            <div class="modal-header border-0 p-4">
+                <h4 class="fw-bold mb-0 text-primary"><i class="fas fa-tools me-2"></i>Management Control</h4>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-4 border-end">
+                        <div class="p-3 rounded-4 bg-white shadow-sm mb-4">
+                            <h6 class="fw-bold mb-3"><i class="fas fa-plus me-2 text-primary"></i>Menu Baru</h6>
+                            <input type="text" id="m_name" class="form-control rounded-pill mb-2" placeholder="Nama Menu">
+                            <input type="number" id="m_price" class="form-control rounded-pill mb-2" placeholder="Harga">
+                            <select id="m_cat_select" class="form-select rounded-pill mb-2"></select>
+                            <input type="file" id="m_file" class="form-control rounded-pill mb-3">
+                            <button class="btn-premium btn-blue w-100" id="btnSave" onclick="simpanMenu()"><i class="fas fa-cloud-upload-alt me-2"></i>SIMPAN</button>
+                        </div>
+                        <div class="p-3 rounded-4 bg-white shadow-sm">
+                            <h6 class="fw-bold mb-3"><i class="fas fa-folder-plus me-2 text-warning"></i>Kategori</h6>
+                            <div class="input-group">
+                                <input type="text" id="cat_input" class="form-control rounded-pill-start" placeholder="...">
+                                <button class="btn btn-primary rounded-pill-end" onclick="act_add_cat()"><i class="fas fa-save"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-database me-2"></i>Database Produk</h6>
+                            <input type="text" id="admin-search" class="form-control rounded-pill w-50 shadow-sm" placeholder="Cari..." oninput="syncFilter()">
+                        </div>
+                        <div id="admin-list" class="row overflow-auto pe-2" style="max-height: 500px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-card p-4">
+            <h5 class="fw-bold text-center mb-4"><i class="fas fa-edit me-2"></i>Edit Detail Menu</h5>
+            <input type="hidden" id="edit-id">
+            <div class="mb-2"><label class="small fw-bold ms-2">Nama</label><input type="text" id="edit-name" class="form-control rounded-pill"></div>
+            <div class="mb-2"><label class="small fw-bold ms-2">Harga</label><input type="number" id="edit-price" class="form-control rounded-pill"></div>
+            <div class="mb-4"><label class="small fw-bold ms-2">Kategori</label><select id="edit-cat" class="form-select rounded-pill"></select></div>
+            <button class="btn-premium btn-blue w-100 py-3" onclick="updateMenuAction()"><i class="fas fa-check-circle me-2"></i>PERBARUI DATA</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="qrisModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-card p-5 text-center shadow-lg">
+            <h5 class="fw-bold mb-4">E-Payment QRIS</h5>
+            <div class="p-4 rounded-4 mb-4" style="background: var(--glass-dark); border: 2px dashed var(--primary-color);">
+                <small class="text-muted d-block fw-bold">TOTAL BAYAR</small>
+                <h2 class="fw-bold text-primary mb-0" id="qris-nominal-text">Rp 0</h2>
+            </div>
+            <img src="https://i.ibb.co.com/mC8SDk1j/Whats-App-Image-2026-01-01-at-16-20-37.jpg" class="img-fluid rounded-4 shadow-lg mb-4" style="max-width: 220px;">
+            <button class="btn-premium btn-blue w-100 py-3" data-bs-dismiss="modal"><i class="fas fa-check-double me-2"></i>KONFIRMASI BAYAR</button>
+        </div>
+    </div>
+</div>
+
+<div id="print-area"></div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBWz63o_JFK3Ucvb7IuXI1cNO8SXMHvsEA",
+        authDomain: "kasirmaccanew.firebaseapp.com",
+        databaseURL: "https://kasirmaccanew-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "kasirmaccanew"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let masterMenu = [];
+    let activeFilter = "Semua";
+    let cart = [];
+    let currentTotal = 0;
+
+    window.handleLogin = (role) => {
+        document.getElementById('login-screen').classList.add('animate__animated', 'animate__fadeOut');
+        setTimeout(() => {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            if(role === 'ADMIN') document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'inline-block');
+            syncData();
+        }, 500);
+    };
+
+    function syncData() {
+        onValue(ref(db, 'kategori'), (snap) => {
+            const data = snap.val();
+            const bar = document.getElementById('cat-bar');
+            const s1 = document.getElementById('m_cat_select');
+            const s2 = document.getElementById('edit-cat');
+            bar.innerHTML = `<button class="category-btn ${activeFilter==='Semua'?'active':''}" onclick="setFilter('Semua')">SEMUA</button>`;
+            s1.innerHTML = ''; s2.innerHTML = '';
+            if(data) Object.values(data).forEach(c => {
+                bar.innerHTML += `<button class="category-btn ${activeFilter===c?'active':''}" onclick="setFilter('${c}')">${c.toUpperCase()}</button>`;
+                s1.innerHTML += `<option value="${c}">${c}</option>`;
+                s2.innerHTML += `<option value="${c}">${c}</option>`;
+            });
+        });
+
+        onValue(ref(db, 'master_menu'), (snap) => {
+            const data = snap.val();
+            masterMenu = data ? Object.keys(data).map(id => ({...data[id], id})) : [];
+            syncFilter();
+        });
+    }
+
+    window.syncFilter = () => {
+        const qK = document.getElementById('kasir-search').value.toLowerCase();
+        const qA = document.getElementById('admin-search').value.toLowerCase();
+        renderKasir(qK);
+        renderAdmin(qA);
+    };
+
+    function renderKasir(q) {
+        const grid = document.getElementById('menu-grid'); grid.innerHTML = '';
+        masterMenu.filter(m => (activeFilter==="Semua"||m.category===activeFilter) && m.name.toLowerCase().includes(q)).forEach(m => {
+            const isHabis = m.status === 'HABIS';
+            grid.innerHTML += `
+                <div class="col-6 col-md-4 col-xl-3 animate__animated animate__fadeInUp">
+                    <div class="card card-menu shadow-sm ${isHabis?'habis':''}" onclick="${isHabis?'':'addToCart(\''+m.name+'\','+m.price+')'}">
+                        ${isHabis?'<div class="habis-tag">HABIS</div>':''}
+                        <img src="${m.image}" class="menu-img">
+                        <div class="p-3 text-center">
+                            <h6 class="fw-bold mb-2 text-truncate">${m.name}</h6>
+                            <span class="price-badge">Rp ${m.price.toLocaleString()}</span>
+                        </div>
+                    </div>
+                </div>`;
+        });
+    }
+
+    function renderAdmin(q) {
+        const list = document.getElementById('admin-list'); list.innerHTML = '';
+        masterMenu.filter(m => m.name.toLowerCase().includes(q)).forEach(m => {
+            list.innerHTML += `
+                <div class="col-12">
+                    <div class="admin-item d-flex align-items-center justify-content-between shadow-sm">
+                        <div class="d-flex align-items-center">
+                            <img src="${m.image}" style="width:45px;height:45px;border-radius:12px;object-fit:cover" class="me-3 shadow-sm">
+                            <div><strong class="d-block text-dark">${m.name}</strong><small class="text-muted">${m.category} • Rp ${m.price.toLocaleString()}</small></div>
+                        </div>
+                        <div class="d-flex gap-2 align-items-center">
+                            <div class="form-check form-switch me-2">
+                                <input class="form-check-input" type="checkbox" ${m.status!=='HABIS'?'checked':''} onchange="toggleStatus('${m.id}', this.checked)">
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary rounded-circle" onclick="openEdit('${m.id}','${m.name}',${m.price},'${m.category}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-outline-danger rounded-circle" onclick="hapusMenu('${m.id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>`;
+        });
+    }
+
+    window.toggleStatus = (id, ready) => update(ref(db, `master_menu/${id}`), {status: ready?'READY':'HABIS'});
+    window.hapusMenu = (id) => confirm("Hapus menu ini?") && remove(ref(db, `master_menu/${id}`));
+    window.openEdit = (id, n, p, c) => {
+        document.getElementById('edit-id').value = id;
+        document.getElementById('edit-name').value = n;
+        document.getElementById('edit-price').value = p;
+        document.getElementById('edit-cat').value = c;
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    };
+    window.updateMenuAction = () => {
+        update(ref(db, `master_menu/${document.getElementById('edit-id').value}`), {
+            name: document.getElementById('edit-name').value,
+            price: parseInt(document.getElementById('edit-price').value),
+            category: document.getElementById('edit-cat').value
+        }).then(() => bootstrap.Modal.getInstance(document.getElementById('editModal')).hide());
+    };
+
+    window.setFilter = (f) => { activeFilter = f; syncData(); };
+    window.updateUI = () => {
+        const d = document.getElementById('deliv').checked;
+        document.getElementById('cart-container').className = "cart-container " + (d?"antar-theme":"dinein-theme");
+        document.getElementById('total-card').style.background = d ? "var(--gold-gradient)" : "var(--blue-gradient)";
+        document.getElementById('deliv-panel').style.display = d ? 'block' : 'none';
+        calculateTotal();
+    };
+
+    window.addToCart = (n, p) => { cart.push({n, p}); renderCart(); };
+    window.rmvCart = (i) => { cart.splice(i, 1); renderCart(); };
+    window.batalSemua = () => { if(confirm("Reset Billing?")) { cart = []; renderCart(); } };
+
+    function renderCart() {
+        document.getElementById('cart-list').innerHTML = cart.map((it, i) => `
+            <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded-4 mb-2 shadow-sm border-0">
+                <div><span class="fw-bold d-block" style="font-size:0.85rem">${it.n}</span><small class="text-primary fw-bold">Rp ${it.p.toLocaleString()}</small></div>
+                <button class="btn btn-sm text-danger" onclick="rmvCart(${i})"><i class="fas fa-times-circle"></i></button>
+            </div>`).join('');
+        calculateTotal();
+    }
+
+    window.calculateTotal = () => {
+        let sub = cart.reduce((a, b) => a + b.p, 0);
+        let ong = parseInt(document.getElementById('ongkir-manual').value) || 0;
+        currentTotal = sub + (document.getElementById('deliv').checked ? ong : 0);
+        document.getElementById('total-price-text').innerText = "Rp " + currentTotal.toLocaleString();
+    };
+
+    window.calculateChange = () => {
+        const p = parseInt(document.getElementById('cash-amount').value) || 0;
+        document.getElementById('change-text').innerText = "Rp " + (p - currentTotal > 0 ? (p - currentTotal).toLocaleString() : 0);
+    };
+
+    window.toggleCashPanel = () => document.getElementById('cash-panel').style.display = document.getElementById('pQRIS').checked ? 'none' : 'block';
+    window.prepareQRIS = () => document.getElementById('qris-nominal-text').innerText = "Rp " + currentTotal.toLocaleString();
+
+    window.submitAndPrint = async () => {
+        const n = document.getElementById('custName').value;
+        if(!n || cart.length === 0) return alert("Nama & Pesanan wajib diisi!");
+        
+        document.getElementById('print-area').innerHTML = `
+            <div style="width:58mm; font-family:monospace; font-size:10px; text-align:center">
+                <b>LESEHAN MACCA</b><br>${new Date().toLocaleString()}<hr>
+                PLG: ${n}<br>TIPE: ${document.getElementById('deliv').checked?'ANTAR':'DINE-IN'}<hr>
+                ${cart.map(it => `<div>${it.n} - ${it.p.toLocaleString()}</div>`).join('')}<hr>
+                <b>TOTAL: Rp ${currentTotal.toLocaleString()}</b><br>
+                BYR: ${document.getElementById('pQRIS').checked?'QRIS':'TUNAI'}<hr>
+                Terima Kasih!
+            </div>`;
+        
+        await push(ref(db, 'transaksi'), { name: n, items: cart, total: currentTotal, time: new Date().toISOString() });
+        window.print();
+        cart = []; document.getElementById('custName').value = ""; document.getElementById('cash-amount').value = ""; renderCart();
+    };
+
+    window.simpanMenu = () => {
+        const f = document.getElementById('m_file').files[0]; if(!f) return;
+        const r = new FileReader(); r.readAsDataURL(f);
+        r.onload = (e) => {
+            const img = new Image(); img.src = e.target.result;
+            img.onload = () => {
+                const c = document.createElement('canvas'); c.width = 400; c.height = 300;
+                c.getContext('2d').drawImage(img,0,0,400,300);
+                push(ref(db, 'master_menu'), {
+                    name: document.getElementById('m_name').value,
+                    price: parseInt(document.getElementById('m_price').value),
+                    category: document.getElementById('m_cat_select').value,
+                    image: c.toDataURL('image/jpeg', 0.6),
+                    status: 'READY'
+                }).then(() => { document.getElementById('m_name').value=''; document.getElementById('m_price').value=''; });
+            }
+        }
+    };
+    window.act_add_cat = () => {
+        const v = document.getElementById('cat_input').value;
+        if(v) push(ref(db, 'kategori'), v).then(() => document.getElementById('cat_input').value='');
+    };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<style>
+    .category-btn { 
+        white-space: nowrap; padding: 12px 24px; border-radius: 18px; 
+        background: white; border: 1px solid rgba(0,0,0,0.05); font-weight: 700; color: #666; transition: 0.3s;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+    }
+    .category-btn.active { background: var(--primary-color); color: white; transform: scale(1.05); box-shadow: 0 10px 20px rgba(0,74,173,0.15); }
+    .form-control:focus { box-shadow: none; border-color: var(--primary-color); }
+</style>
+
+</body>
+</html>
