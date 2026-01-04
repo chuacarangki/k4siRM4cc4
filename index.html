@@ -72,7 +72,30 @@
         #print-area { width: 58mm; padding: 5mm; font-family: 'Courier New', monospace; font-size: 11px; background: white; }
         @media print { body * { visibility: hidden; } #print-area, #print-area * { visibility: visible; } #print-area { display: block !important; position: absolute; left: 0; top: 0; } }
         #print-area { display: none; }
-    </style>
+    
+/* ================= MOBILE OPTIMIZATION ================= */
+@media (max-width: 576px) {
+    body { font-size: 14px; }
+    .navbar { padding: 10px 14px; }
+    .navbar-brand { font-size: 1.2rem; }
+    .nav-pills { flex-wrap: nowrap; overflow-x: auto; gap: 8px; }
+    .nav-pills .nav-link { padding: 8px 14px; font-size: 0.85rem; white-space: nowrap; }
+    .menu-img { height: 130px; }
+    .card-menu h6 { font-size: 0.85rem; }
+    .price-badge { font-size: 0.75rem; padding: 5px 10px; }
+    .sticky-cart { position: static; height: auto; margin-top: 20px; }
+    #cart-list { max-height: 180px; }
+    #total-card h2 { font-size: 1.8rem; }
+    input, textarea { font-size: 0.9rem; }
+    .btn-premium { padding: 12px; font-size: 0.9rem; }
+}
+
+@media (min-width: 577px) and (max-width: 992px) {
+    .menu-img { height: 150px; }
+    .sticky-cart { top: 80px; height: calc(100vh - 120px); }
+}
+
+</style>
 </head>
 <body>
 
