@@ -18,46 +18,89 @@
             --gold-gradient: linear-gradient(135deg, #ffbd59 0%, #ff9100 100%);
             --blue-gradient: linear-gradient(135deg, #004aad 0%, #002d62 100%);
             --glass: rgba(255, 255, 255, 0.9);
+            --sidebar-width: 280px;
         }
 
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f0f4f8; color: #1a1a1a; overflow-x: hidden; }
 
-        /* NAVBAR & NAVIGATION */
-        .navbar { background: var(--glass) !important; backdrop-filter: blur(10px); padding: 10px 30px; border-bottom: 2px solid rgba(0,74,173,0.1); }
-        .nav-pills .nav-link { border-radius: 15px; font-weight: 700; color: var(--primary-blue); padding: 10px 20px; transition: 0.4s; text-align: center; border: 1px solid transparent; min-width: 100px; }
-        .nav-pills .nav-link i { display: block; font-size: 1.5rem; margin-bottom: 5px; }
-        .nav-pills .nav-link span { font-size: 0.7rem; letter-spacing: 1px; display: block; text-transform: uppercase; }
-        .nav-pills .nav-link.active { background: var(--blue-gradient) !important; color: var(--accent-gold) !important; box-shadow: 0 8px 15px rgba(0,74,173,0.2); border: 1px solid var(--accent-gold); }
+        /* SIDEBAR STYLES */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: var(--blue-gradient);
+            padding: 30px 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            color: white;
+        }
 
-        /* MENU CARDS */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 30px;
+            min-height: 100vh;
+        }
+
+        .nav-sidebar {
+            flex-grow: 1;
+            margin-top: 40px;
+        }
+
+        .nav-sidebar .nav-link {
+            color: rgba(255,255,255,0.7);
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid transparent;
+        }
+
+        .nav-sidebar .nav-link i { font-size: 1.2rem; }
+
+        .nav-sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .nav-sidebar .nav-link.active {
+            background: var(--gold-gradient) !important;
+            color: black !important;
+            box-shadow: 0 8px 15px rgba(255, 189, 89, 0.2);
+        }
+
+        /* MENU CARDS & OTHERS */
         .card-menu { border: none; border-radius: 25px; overflow: hidden; background: white; transition: 0.3s; cursor: pointer; height: 100%; box-shadow: 0 8px 20px rgba(0,0,0,0.04); border: 1px solid rgba(255, 189, 89, 0.1); }
         .card-menu:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); border: 1px solid var(--accent-gold); }
         .card-menu.status-habis { opacity: 0.6; filter: grayscale(1); cursor: not-allowed; }
         .menu-img-container { position: relative; height: 140px; overflow: hidden; background: #eee; }
         .menu-img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
-        .card-menu:hover .menu-img { transform: scale(1.1); }
-        .habis-label { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; z-index: 2; }
         .price-badge { background: var(--gold-gradient); color: #000; padding: 4px 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; margin-top: 5px; display: inline-block; }
 
-        /* FLOATING CART */
         .cart-bar-bottom { position: fixed; bottom: 25px; right: 25px; width: 400px; z-index: 1000; pointer-events: none; }
-        .cart-bar-content { pointer-events: all; background: var(--glass); backdrop-filter: blur(15px); padding: 25px; border-radius: 35px; box-shadow: 0 20px 50px rgba(0,45,98,0.25); border: 1px solid rgba(255, 189, 89, 0.3); border-left: 8px solid var(--accent-gold); }
-        .cart-item-mini { background: rgba(0,74,173,0.05); border-radius: 12px; padding: 10px 15px; margin-bottom: 8px; display: flex; justify-content: space-between; font-size: 0.9rem; border-right: 4px solid var(--primary-blue); }
+        .cart-bar-content { pointer-events: all; background: var(--glass); backdrop-filter: blur(15px); padding: 25px; border-radius: 35px; box-shadow: 0 20px 50px rgba(0,45,98,0.25); border-left: 8px solid var(--accent-gold); }
 
-        /* CATEGORY NAVIGATION */
-        .category-btn { white-space: nowrap; padding: 12px 25px; border-radius: 20px; background: white; border: 1px solid rgba(0,0,0,0.05); font-weight: 700; color: var(--primary-blue); margin-right: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: 0.3s; }
-        .category-btn.active { background: var(--gold-gradient); color: black; border-color: transparent; box-shadow: 0 8px 20px rgba(255, 189, 89, 0.4); }
+        .category-btn { white-space: nowrap; padding: 12px 25px; border-radius: 20px; background: white; border: 1px solid rgba(0,0,0,0.05); font-weight: 700; color: var(--primary-blue); margin-right: 12px; transition: 0.3s; }
+        .category-btn.active { background: var(--gold-gradient); color: black; box-shadow: 0 8px 20px rgba(255, 189, 89, 0.4); }
 
-        /* PREMIUM BUTTONS & OPTIONS */
-        .btn-premium { border-radius: 20px; padding: 15px; font-weight: 800; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-premium { border-radius: 20px; padding: 15px; font-weight: 800; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; text-transform: uppercase; }
         .btn-blue { background: var(--blue-gradient); color: white; border: 1px solid var(--accent-gold); }
         .btn-gold { background: var(--gold-gradient); color: black; }
-        .btn-premium:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
-
-        .btn-service, .btn-pay-method { flex: 1; border: none; padding: 8px; border-radius: 12px; font-weight: 700; background: #f1f5f9; transition: 0.3s; color: var(--primary-blue); border: 2px solid transparent; font-size: 0.85rem; }
-        .btn-service.active, .btn-pay-method.active { background: var(--blue-gradient); color: white; border-color: var(--accent-gold); }
 
         #login-screen { height: 100vh; background: var(--blue-gradient); display: flex; align-items: center; justify-content: center; position: fixed; width: 100%; z-index: 9999; }
+        
+        /* Mobile Overlay */
+        @media (max-width: 991px) {
+            .sidebar { transform: translateX(-100%); transition: 0.3s; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+        }
     </style>
 </head>
 <body>
@@ -78,83 +121,134 @@
 </div>
 
 <div id="main-app" style="display:none;">
-    <nav class="navbar navbar-expand-lg sticky-top">
-        <div class="container-fluid">
-            <span class="navbar-brand fw-bold fs-3" style="color: var(--primary-blue);"><i class="fas fa-utensils me-2 text-warning"></i>LESEHAN MACCA</span>
-            
-            <ul class="nav nav-pills mx-auto">
-                <li class="nav-item">
-                    <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-kasir">
-                        <i class="fas fa-cash-register"></i>
-                        <span>KASIR</span>
-                    </button>
-                </li>
-                <li class="nav-item ms-3">
-                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-laporan" onclick="loadLaporan()">
-                        <i class="fas fa-balance-scale"></i>
-                        <span>LAPORAN</span>
-                    </button>
-                </li>
-            </ul>
-
-            <div class="d-flex align-items-center gap-3">
-                <div class="badge bg-white text-primary p-2 px-3 rounded-pill border fw-bold shadow-sm">
-                    <i class="fas fa-user-circle me-2 text-warning"></i><span id="user-display">Petugas</span>
-                </div>
-                <button class="btn btn-warning rounded-circle shadow-sm text-white" data-bs-toggle="modal" data-bs-target="#adminModal" style="width:45px; height:45px;"><i class="fas fa-cog"></i></button>
-                <button class="btn btn-danger rounded-circle shadow-sm" onclick="location.reload()" style="width:45px; height:45px;"><i class="fas fa-power-off"></i></button>
-            </div>
-        </div>
-    </nav>
-
-    <div class="tab-content mt-4">
-        <div class="tab-pane fade show active" id="tab-kasir">
-            <div class="container-fluid px-4">
-                <div class="position-relative mb-4 mx-auto" style="max-width: 800px;">
-                    <i class="fas fa-search position-absolute top-50 translate-middle-y ms-4 text-primary"></i>
-                    <input type="text" id="kasir-search" class="form-control rounded-pill border-0 shadow-lg p-3 ps-5 fw-bold" placeholder="Cari menu..." onkeyup="syncFilter()">
-                </div>
-                <div id="cat-bar" class="d-flex justify-content-center overflow-auto mb-4 pb-2"></div>
-                <div id="menu-grid" class="row g-4 mb-5 pb-5"></div>
-            </div>
-
-            <div id="floating-cart" class="cart-bar-bottom animate__animated animate__fadeInUp" style="display: none;">
-                <div class="cart-bar-content">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="fw-bold text-primary"><i class="fas fa-shopping-basket me-2 text-warning"></i> <span id="cart-count">0</span> PESANAN</span>
-                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" onclick="batalSemua()"><i class="fas fa-trash-alt me-1"></i> RESET</button>
-                    </div>
-                    <div id="cart-preview" class="mb-3" style="max-height: 150px; overflow-y: auto;"></div>
-                    <button class="btn-premium btn-blue w-100 shadow-lg" data-bs-toggle="modal" data-bs-target="#checkoutModal">
-                        <i class="fas fa-paper-plane me-2 text-warning"></i> PROSES (Rp <span id="cart-total-bar">0</span>)
-                    </button>
-                </div>
-            </div>
+    <div class="sidebar shadow-lg">
+        <div class="text-center mb-4">
+            <i class="fas fa-utensils fa-3x text-warning mb-3"></i>
+            <h4 class="fw-bold text-white">MACCA POS</h4>
         </div>
         
-        <div class="tab-pane fade" id="tab-laporan">
-            <div class="container px-4">
-                <div class="row g-4 mb-4">
-                    <div class="col-md-6">
-                        <div class="p-4 rounded-4 text-white shadow-lg" style="background:var(--blue-gradient)">
-                            <small class="text-white-50 fw-bold"><i class="fas fa-chart-line me-1"></i> OMZET HARI INI</small>
-                            <h2 id="total-omzet" class="fw-bold mb-0">Rp 0</h2>
+        <div class="nav nav-pills flex-column nav-sidebar" id="v-pills-tab" role="tablist">
+            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-kasir" type="button">
+                <i class="fas fa-cash-register"></i> KASIR
+            </button>
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-laporan" type="button" onclick="loadLaporan()">
+                <i class="fas fa-balance-scale"></i> LAPORAN
+            </button>
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-admin" type="button" onclick="renderAdminList()">
+                <i class="fas fa-user-shield"></i> PANEL KONTROL
+            </button>
+        </div>
+
+        <div class="mt-auto">
+            <div class="p-3 bg-white bg-opacity-10 rounded-4 mb-3 border border-white border-opacity-25">
+                <small class="d-block text-white-50">Petugas Aktif:</small>
+                <div class="fw-bold"><i class="fas fa-user-circle me-2 text-warning"></i><span id="user-display">Petugas</span></div>
+            </div>
+            <button class="btn btn-danger w-100 rounded-pill py-2" onclick="location.reload()">
+                <i class="fas fa-power-off me-2"></i> KELUAR
+            </button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="tab-kasir">
+                <div class="container-fluid">
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h2 class="fw-bold text-primary">Kasir Penjualan</h2>
+                            <p class="text-muted">Pilih menu untuk memulai pesanan baru.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="position-relative">
+                                <i class="fas fa-search position-absolute top-50 translate-middle-y ms-3 text-primary"></i>
+                                <input type="text" id="kasir-search" class="form-control rounded-pill border-0 shadow-sm p-3 ps-5 fw-bold" placeholder="Cari menu..." onkeyup="syncFilter()">
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="p-4 rounded-4 shadow-lg" style="background:var(--gold-gradient)">
-                            <small class="text-dark fw-bold"><i class="fas fa-receipt me-1"></i> TOTAL TRANSAKSI</small>
-                            <h2 id="total-trx" class="fw-bold mb-0">0</h2>
+                    
+                    <div id="cat-bar" class="d-flex overflow-auto mb-4 pb-2"></div>
+                    <div id="menu-grid" class="row g-4 mb-5"></div>
+                </div>
+
+                <div id="floating-cart" class="cart-bar-bottom animate__animated animate__fadeInUp" style="display: none;">
+                    <div class="cart-bar-content">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="fw-bold text-primary"><i class="fas fa-shopping-basket me-2 text-warning"></i> <span id="cart-count">0</span> PESANAN</span>
+                            <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" onclick="batalSemua()"><i class="fas fa-trash-alt me-1"></i> RESET</button>
+                        </div>
+                        <div id="cart-preview" class="mb-3" style="max-height: 150px; overflow-y: auto;"></div>
+                        <button class="btn-premium btn-blue w-100 shadow-lg" data-bs-toggle="modal" data-bs-target="#checkoutModal">
+                            <i class="fas fa-paper-plane me-2 text-warning"></i> PROSES (Rp <span id="cart-total-bar">0</span>)
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="tab-laporan">
+                <div class="container-fluid">
+                    <h2 class="fw-bold text-primary mb-4">Laporan Penjualan</h2>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="p-4 rounded-4 text-white shadow-lg" style="background:var(--blue-gradient)">
+                                <small class="text-white-50 fw-bold"><i class="fas fa-chart-line me-1"></i> OMZET HARI INI</small>
+                                <h2 id="total-omzet" class="fw-bold mb-0">Rp 0</h2>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-4 rounded-4 shadow-lg" style="background:var(--gold-gradient)">
+                                <small class="text-dark fw-bold"><i class="fas fa-receipt me-1"></i> TOTAL TRANSAKSI</small>
+                                <h2 id="total-trx" class="fw-bold mb-0">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-4 shadow-sm border">
+                        <h5 class="fw-bold mb-4 text-primary"><i class="fas fa-history me-2 text-warning"></i>RIWAYAT PENJUALAN</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead><tr class="text-primary"><th>WAKTU</th><th>PELANGGAN</th><th>ITEM</th><th class="text-end">TOTAL</th></tr></thead>
+                                <tbody id="laporan-body"></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-                <div class="bg-white p-4 rounded-4 shadow-sm border">
-                    <h5 class="fw-bold mb-4 text-primary"><i class="fas fa-history me-2 text-warning"></i>RIWAYAT PENJUALAN</h5>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead><tr class="text-primary"><th>WAKTU</th><th>PELANGGAN</th><th>ITEM</th><th class="text-end">TOTAL</th></tr></thead>
-                            <tbody id="laporan-body"></tbody>
-                        </table>
+            </div>
+
+            <div class="tab-pane fade" id="tab-admin">
+                <div class="container-fluid">
+                    <h2 class="fw-bold text-primary mb-4">Panel Kontrol Produk</h2>
+                    <ul class="nav nav-pills mb-4 gap-2 bg-white p-2 rounded-pill shadow-sm d-inline-flex">
+                        <li class="nav-item"><button class="nav-link active rounded-pill px-4" id="btn-tab-list" data-bs-toggle="pill" data-bs-target="#adm-list">Daftar Produk</button></li>
+                        <li class="nav-item"><button class="nav-link rounded-pill px-4" id="btn-tab-add" data-bs-toggle="pill" data-bs-target="#adm-add">Tambah Menu</button></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="adm-list">
+                            <div class="bg-white p-4 rounded-4 shadow-sm border">
+                                <input type="text" id="admin-search" class="form-control rounded-pill mb-4 p-3" placeholder="Cari menu..." onkeyup="renderAdminList()">
+                                <div id="admin-list-container" class="row g-3"></div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="adm-add">
+                            <div class="row g-3 p-4 bg-white rounded-4 shadow-sm border-start border-primary border-5">
+                                <input type="hidden" id="m_id">
+                                <div class="col-md-6"><label class="small fw-bold">NAMA MENU</label><input type="text" id="m_name" class="form-control rounded-4 p-3 bg-light"></div>
+                                <div class="col-md-3"><label class="small fw-bold">HARGA (RP)</label><input type="number" id="m_price" class="form-control rounded-4 p-3 bg-light"></div>
+                                <div class="col-md-3">
+                                    <label class="small fw-bold">KATEGORI</label>
+                                    <select id="m_cat_select" class="form-select rounded-4 p-3 bg-light fw-bold text-primary">
+                                        <option value="MAKANAN">MAKANAN</option>
+                                        <option value="MINUMAN">MINUMAN</option>
+                                        <option value="SAYUR">SAYUR</option>
+                                        <option value="LAINNYA">LAINNYA</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-12"><label class="small fw-bold">FOTO PRODUK</label><input type="file" id="m_file" class="form-control rounded-4 p-3 bg-light" accept="image/*"></div>
+                                <div class="col-12 mt-4 text-end d-flex justify-content-end gap-2">
+                                    <button class="btn btn-light rounded-pill px-4" onclick="resetFormMenu()">BATAL</button>
+                                    <button class="btn-premium btn-blue px-5" onclick="simpanMenu()"><i class="fas fa-save me-2 text-warning"></i><span id="label-simpan">SIMPAN PRODUK</span></button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -228,7 +322,7 @@
                         </div>
 
                         <button class="btn-premium btn-gold w-100 py-3 shadow-lg" onclick="submitAndPrint()">
-                            <i class="fas fa-print fa-lg me-2"></i> CHECKOUT
+                            <i class="fas fa-print fa-lg me-2"></i> SELESAI & CETAK
                         </button>
                     </div>
                 </div>
@@ -237,53 +331,8 @@
     </div>
 </div>
 
-<div class="modal fade" id="adminModal" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content border-0 rounded-5 overflow-hidden">
-            <div class="modal-header border-0 bg-primary p-4 text-white">
-                <h5 class="fw-bold mb-0"><i class="fas fa-user-shield me-2 text-warning"></i> PANEL KONTROL</h5>
-                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4 bg-light">
-                <ul class="nav nav-pills mb-4 gap-2 bg-white p-2 rounded-pill shadow-sm d-inline-flex">
-                    <li class="nav-item"><button class="nav-link active rounded-pill px-4" id="btn-tab-list" data-bs-toggle="pill" data-bs-target="#adm-list">Daftar Produk</button></li>
-                    <li class="nav-item"><button class="nav-link rounded-pill px-4" id="btn-tab-add" data-bs-toggle="pill" data-bs-target="#adm-add">Tambah Menu</button></li>
-                </ul>
-                <div class="tab-content">
-                    <div class="tab-pane fade show active" id="adm-list">
-                        <div class="bg-white p-4 rounded-4 shadow-sm border">
-                            <input type="text" id="admin-search" class="form-control rounded-pill mb-4 p-3" placeholder="Cari menu..." onkeyup="renderAdminList()">
-                            <div id="admin-list-container" class="row g-3"></div>
-                        </div>
-                    </div>
-                    <div class="tab-pane fade" id="adm-add">
-                        <div class="row g-3 p-4 bg-white rounded-4 shadow-sm border-start border-primary border-5">
-                            <input type="hidden" id="m_id">
-                            <div class="col-md-6"><label class="small fw-bold">NAMA MENU</label><input type="text" id="m_name" class="form-control rounded-4 p-3 bg-light"></div>
-                            <div class="col-md-3"><label class="small fw-bold">HARGA (RP)</label><input type="number" id="m_price" class="form-control rounded-4 p-3 bg-light"></div>
-                            <div class="col-md-3">
-                                <label class="small fw-bold">KATEGORI</label>
-                                <select id="m_cat_select" class="form-select rounded-4 p-3 bg-light fw-bold text-primary border-0 shadow-sm">
-                                    <option value="MAKANAN">MAKANAN</option>
-                                    <option value="MINUMAN">MINUMAN</option>
-                                    <option value="SAYUR">SAYUR</option>
-                                    <option value="LAINNYA">LAINNYA</option>
-                                </select>
-                            </div>
-                            <div class="col-md-12"><label class="small fw-bold">FOTO PRODUK</label><input type="file" id="m_file" class="form-control rounded-4 p-3 bg-light" accept="image/*"></div>
-                            <div class="col-12 mt-4 text-end d-flex justify-content-end gap-2">
-                                <button class="btn btn-light rounded-pill px-4" onclick="resetFormMenu()">BATAL</button>
-                                <button class="btn-premium btn-blue px-5" onclick="simpanMenu()"><i class="fas fa-save me-2 text-warning"></i><span id="label-simpan">SIMPAN PRODUK</span></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script type="module">
+    // Firebase initialization remains same
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
@@ -332,7 +381,7 @@
             return q.length > 0 ? matchSearch : matchTab;
         });
         document.getElementById('menu-grid').innerHTML = f.map(m => `
-            <div class="col-6 col-md-4 col-xl-2 animate__animated animate__fadeIn">
+            <div class="col-6 col-md-4 col-xl-3 animate__animated animate__fadeIn">
                 <div class="card card-menu ${m.status==='Habis'?'status-habis':''}" onclick="${m.status==='Habis'?'':'addToCart(\''+m.name+'\','+m.price+')'}">
                     <div class="menu-img-container">${m.status==='Habis'?'<div class="habis-label">HABIS</div>':''}<img src="${m.image || 'https://via.placeholder.com/150'}" class="menu-img"></div>
                     <div class="p-3 text-center">
