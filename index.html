@@ -87,6 +87,29 @@
         .cart-bar-bottom { position: fixed; bottom: 25px; right: 25px; width: 400px; z-index: 1000; pointer-events: none; }
         .cart-bar-content { pointer-events: all; background: var(--glass); backdrop-filter: blur(15px); padding: 25px; border-radius: 35px; box-shadow: 0 20px 50px rgba(0,45,98,0.25); border: 1px solid rgba(255, 189, 89, 0.3); border-left: 8px solid var(--accent-gold); }
 
+        /* Tombol Back to Top */
+        #backToTop {
+            display: none;
+            position: fixed;
+            bottom: 120px; /* Di atas cart bar */
+            right: 35px;
+            z-index: 1045;
+            border: none;
+            outline: none;
+            background: var(--gold-gradient);
+            color: black;
+            cursor: pointer;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            transition: 0.3s;
+            font-size: 1.2rem;
+            align-items: center;
+            justify-content: center;
+        }
+        #backToTop:hover { transform: scale(1.1); background: var(--blue-gradient); color: white; }
+
         .btn-premium { border-radius: 20px; padding: 15px; font-weight: 800; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
         .btn-blue { background: var(--blue-gradient); color: white; border: 1px solid var(--accent-gold); }
         .btn-gold { background: var(--gold-gradient); color: black; }
@@ -99,7 +122,7 @@
         #login-screen { height: 100vh; background: var(--blue-gradient); display: flex; align-items: center; justify-content: center; position: fixed; width: 100%; z-index: 9999; }
         
         @media print {
-            .sidebar, .mobile-toggle, .btn-danger, .trx-box, .no-print { display: none !important; }
+            .sidebar, .mobile-toggle, .btn-danger, .trx-box, .no-print, #backToTop { display: none !important; }
             .main-content { margin: 0 !important; padding: 0 !important; }
             .table-responsive { overflow: visible !important; }
         }
@@ -133,11 +156,7 @@
             width: 18px;
             height: 18px;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.65rem;
-            font-weight: 800;
+            display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 800;
         }
     </style>
 </head>
@@ -161,6 +180,8 @@
 <div id="main-app" style="display:none;">
     <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
     <button class="mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+
+    <button id="backToTop" onclick="scrollToTop()" class="d-flex animate__animated"><i class="fas fa-arrow-up"></i></button>
 
     <div class="sidebar shadow-lg" id="sidebar">
         <div class="text-center mb-5 mt-2">
@@ -619,6 +640,20 @@
     let masterMenu = [], cart = [], activeFilter = "Semua", activeSubFilter = "Semua", currentTotal = 0, serviceType = "Dine In", paymentType = "TUNAI", onlineMethod = "";
     let menuSalesStats = {};
 
+    // Scroll Back to Top Logic
+    const btnToTop = document.getElementById("backToTop");
+    window.onscroll = function() {
+        if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+            btnToTop.style.display = "flex";
+            btnToTop.classList.add("animate__fadeInUp");
+        } else {
+            btnToTop.style.display = "none";
+        }
+    };
+    window.scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     window.toggleSidebar = () => {
         document.getElementById('sidebar').classList.toggle('active');
         document.getElementById('overlay').classList.toggle('active');
@@ -666,69 +701,58 @@
         const sel = document.getElementById('m_cat_select');
         const currentVal = sel.value;
         const defaultCats = ['MAKANAN', 'MINUMAN', 'SAYUR', 'LAINNYA'];
-        
-        // Ambil Induk saja (bagian sebelum ' > ')
         const existingCats = [...new Set(masterMenu.map(m => m.category.split(' > ')[0]))];
         const allCats = [...new Set([...defaultCats, ...existingCats])];
-        
         sel.innerHTML = allCats.map(c => `<option value="${c}">${c}</option>`).join('');
         if (allCats.includes(currentVal)) sel.value = currentVal;
     }
 
     window.renderCategoryTabs = () => {
-        // Ambil kategori induk unik
-        let uniqueInduk = ['Semua', ...new Set(masterMenu.map(m => m.category.split(' > ')[0]))];
-        const icons = {'Semua':'fa-list-ul', 'MAKANAN':'fa-utensils', 'MINUMAN':'fa-glass-water', 'SAYUR':'fa-leaf', 'LAINNYA':'fa-ellipsis'};
-        
-        document.getElementById('cat-bar').innerHTML = uniqueInduk.map(c => `
-            <button class="category-btn ${activeFilter === c ? 'active' : ''}" onclick="setFilter('${c}')">
-                <i class="fas ${icons[c] || 'fa-tag'} me-2"></i>${c}
-            </button>`).join('');
-            
-        renderSubCategoryBar();
+    // 1. Tentukan urutan manual yang diinginkan
+    const urutanManual = ['Semua', 'PAKET HEMAT', 'MAKANAN', 'MINUMAN', 'SAYUR', 'LAINNYA'];
+    
+    // 2. Ambil kategori induk unik dari database yang mungkin tidak ada di daftar manual
+    let kategoriLain = [...new Set(masterMenu.map(m => m.category.split(' > ')[0]))]
+                        .filter(c => !urutanManual.includes(c));
+
+    // 3. Gabungkan urutan manual dengan kategori tambahan jika ada
+    let finalCategories = [...urutanManual, ...kategoriLain];
+    
+    // 4. Mapping Icon
+    const icons = {
+        'Semua':'fa-list-ul', 
+        'PAKET HEMAT':'fa-star', 
+        'MAKANAN':'fa-utensils', 
+        'MINUMAN':'fa-glass-water', 
+        'SAYUR':'fa-leaf', 
+        'LAINNYA':'fa-ellipsis'
     };
+    
+    // 5. Render ke HTML
+    document.getElementById('cat-bar').innerHTML = finalCategories.map(c => `
+        <button class="category-btn ${activeFilter === c ? 'active' : ''}" onclick="setFilter('${c}')">
+            <i class="fas ${icons[c] || 'fa-tag'} me-2"></i>${c}
+        </button>`).join('');
+        
+    renderSubCategoryBar();
+};
 
     window.renderSubCategoryBar = () => {
         const subBar = document.getElementById('sub-cat-container');
-        if (activeFilter === 'Semua') {
-            subBar.style.display = 'none';
-            return;
-        }
-
-        // Cari sub-kategori yang dimiliki oleh induk terpilih
-        let subCats = [...new Set(
-            masterMenu
-                .filter(m => m.category.startsWith(activeFilter + ' > '))
-                .map(m => m.category.split(' > ')[1])
-        )];
-
+        if (activeFilter === 'Semua') { subBar.style.display = 'none'; return; }
+        let subCats = [...new Set(masterMenu.filter(m => m.category.startsWith(activeFilter + ' > ')).map(m => m.category.split(' > ')[1]))];
         if (subCats.length > 0) {
             subBar.style.display = 'flex';
             subBar.innerHTML = `<button class="sub-btn ${activeSubFilter === 'Semua' ? 'active' : ''}" onclick="setSubFilter('Semua')">SEMUA ${activeFilter}</button>` + 
-                subCats.map(sc => `
-                <button class="sub-btn ${activeSubFilter === sc ? 'active' : ''}" onclick="setSubFilter('${sc}')">${sc}</button>
-            `).join('');
-        } else {
-            subBar.style.display = 'none';
-        }
+                subCats.map(sc => `<button class="sub-btn ${activeSubFilter === sc ? 'active' : ''}" onclick="setSubFilter('${sc}')">${sc}</button>`).join('');
+        } else { subBar.style.display = 'none'; }
     };
 
-    window.setFilter = (cat) => { 
-        activeFilter = cat; 
-        activeSubFilter = "Semua"; // Reset sub setiap ganti induk
-        renderCategoryTabs(); 
-        syncFilter(); 
-    };
-
-    window.setSubFilter = (sub) => {
-        activeSubFilter = sub;
-        renderSubCategoryBar();
-        syncFilter();
-    }
+    window.setFilter = (cat) => { activeFilter = cat; activeSubFilter = "Semua"; renderCategoryTabs(); syncFilter(); };
+    window.setSubFilter = (sub) => { activeSubFilter = sub; renderSubCategoryBar(); syncFilter(); }
     
     window.syncFilter = () => {
         const q = document.getElementById('kasir-search').value.toLowerCase();
-        
         let filtered = masterMenu.filter(m => {
             const [induk, sub] = m.category.split(' > ');
             const matchInduk = (activeFilter === 'Semua' || induk === activeFilter);
@@ -736,13 +760,10 @@
             const matchSearch = m.name.toLowerCase().includes(q);
             return matchInduk && matchSub && matchSearch;
         });
-
         if(activeFilter === 'Semua' && q === '') {
             filtered.sort((a, b) => (menuSalesStats[b.name] || 0) - (menuSalesStats[a.name] || 0));
         }
-
         const top3Best = Object.keys(menuSalesStats).sort((a,b) => menuSalesStats[b]-menuSalesStats[a]).slice(0, 5);
-
         document.getElementById('menu-grid').innerHTML = filtered.map(m => {
             const isBest = top3Best.includes(m.name) && (menuSalesStats[m.name] > 0);
             return `
@@ -758,24 +779,14 @@
             </div>`}).join('');
     };
 
-    // --- FUNGSI ADMIN TERKAIT SUB-KATEGORI ---
     window.showSubSuggest = () => {
         const induk = document.getElementById('m_cat_select').value;
         const subs = [...new Set(masterMenu.filter(m => m.category.startsWith(induk)).map(m => m.category.split(' > ')[1]))].filter(s => s);
-        
         if(subs.length === 0) return Toast.fire({icon:'info', title: 'Belum ada sub-kategori di induk ini'});
-
-        Swal.fire({
-            title: 'Pilih Sub-Kategori',
-            input: 'select',
-            inputOptions: Object.fromEntries(subs.map(s => [s, s])),
-            showCancelButton: true
-        }).then(res => {
-            if(res.isConfirmed) document.getElementById('m_sub_cat').value = res.value;
-        });
+        Swal.fire({ title: 'Pilih Sub-Kategori', input: 'select', inputOptions: Object.fromEntries(subs.map(s => [s, s])), showCancelButton: true })
+        .then(res => { if(res.isConfirmed) document.getElementById('m_sub_cat').value = res.value; });
     }
 
-    // --- LOGIKA KASIR (UNCHANGED) ---
     window.addToCart = (n, p) => { 
         const it = cart.find(i => i.n === n);
         it ? it.qty++ : cart.push({n, p, qty: 1});
@@ -922,13 +933,7 @@
     };
 
     window.inputKategoriManual = async () => {
-        const { value: newCat } = await Swal.fire({ 
-            title: 'Induk Kategori Baru', 
-            input: 'text', 
-            placeholder: 'CONTOH: SNACK',
-            showCancelButton: true
-        });
-
+        const { value: newCat } = await Swal.fire({ title: 'Induk Kategori Baru', input: 'text', placeholder: 'CONTOH: SNACK', showCancelButton: true });
         if (newCat) {
             const catUpper = newCat.toUpperCase();
             const sel = document.getElementById('m_cat_select');
@@ -941,13 +946,11 @@
         const menu = masterMenu.find(m => m.id === id);
         if(!menu) return;
         const [induk, sub] = menu.category.split(' > ');
-        
         document.getElementById('m_id_edit').value = menu.id;
         document.getElementById('m_name').value = menu.name;
         document.getElementById('m_price').value = menu.price;
         document.getElementById('m_cat_select').value = induk;
         document.getElementById('m_sub_cat').value = sub || '';
-        
         document.getElementById('btn-simpan-menu').innerHTML = '<i class="fas fa-check-circle me-2"></i>UPDATE MENU';
         document.getElementById('btn-batal-edit').style.display = 'inline-block';
         document.getElementById('tab-tambah-menu').click();
@@ -966,12 +969,9 @@
         const p = parseInt(document.getElementById('m_price').value);
         const induk = document.getElementById('m_cat_select').value;
         const sub = document.getElementById('m_sub_cat').value.toUpperCase().trim();
-        
         const finalCategory = sub ? `${induk} > ${sub}` : induk;
-
         const file = document.getElementById('m_file').files[0];
         if(!n || !p) return Swal.fire('Error', 'Nama dan Harga wajib diisi', 'error');
-
         const proc = (img = null) => {
             const data = { name: n, price: p, category: finalCategory, status: 'Ready' };
             if(img) data.image = img;
@@ -993,5 +993,3 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-
