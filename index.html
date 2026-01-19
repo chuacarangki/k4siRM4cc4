@@ -141,28 +141,44 @@
         .receipt-popup { font-family: 'Courier New', Courier, monospace; color: #333; text-align: left; }
         .receipt-line { border-top: 1px dashed #ccc; margin: 10px 0; }
 
-        .summary-btn {
-            border: none;
-            background: #f8f9fa;
-            padding: 5px 12px;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 0.75rem;
-            color: #555;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            transition: 0.2s;
-        }
-        .summary-btn .count-badge {
-            background: #ff3b30;
+        .btn-maps {
+            background-color: #ea4335;
             color: white;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 800;
+            border: none;
         }
+        .btn-maps:hover {
+            background-color: #c52d27;
+            color: white;
+        }
+        /* Tampilan baru tab PESANAN ONLINE - cuma ini yang ditambah */
+#tab-online .card {
+    box-shadow: 0 10px 30px rgba(0,74,173,0.1);
+}
+#tab-online .table th {
+    border-top: none;
+    padding: 15px 12px;
+}
+#tab-online .table td {
+    padding: 14px 12px;
+    vertical-align: middle;
+}
+#tab-online .btn-maps {
+    background: #ea4335;
+    color: white;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: 8px;
+}
+#tab-online .btn-maps:hover {
+    background: #c52d27;
+}
+#tab-online .badge {
+    font-size: 0.75rem;
+    padding: 5px 10px;
+}
+#tab-online tr:hover {
+    background-color: rgba(0,74,173,0.03);
+}
     </style>
 </head>
 <body>
@@ -200,9 +216,9 @@
                 <i class="fas fa-calculator"></i> <span>KASIR</span>
             </button>
             <button class="nav-link" id="btn-tab-online" onclick="switchTab('tab-online', this)">
-    <i class="fas fa-globe"></i> <span>PESANAN ONLINE</span>
-    <span class="badge bg-danger ms-auto rounded-pill" id="online-count" style="display:none;">0</span>
-</button>
+                <i class="fas fa-globe"></i> <span>PESANAN ONLINE</span>
+                <span class="badge bg-danger ms-auto rounded-pill" id="online-count" style="display:none;">0</span>
+            </button>
             <button class="nav-link" id="btn-tab-riwayat" onclick="switchTab('tab-riwayat', this)">
                 <i class="fas fa-receipt"></i> <span>RIWAYAT TRX</span>
             </button>
@@ -224,7 +240,7 @@
     </div>
 
     <div class="main-content">
-        <div id="tab-dashboard" class="tab-pane-custom animate__animated animate__fadeIn">
+         <div id="tab-dashboard" class="tab-pane-custom animate__animated animate__fadeIn">
             <div class="container-fluid px-4 pt-5 pt-lg-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
@@ -314,55 +330,40 @@
                 </div>
             </div>
         </div>
-<div id="tab-online" class="tab-pane-custom animate__animated animate__fadeIn" style="display:none;">
-    <div class="container px-4 pt-5 pt-lg-4">
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-md-4">
-                <div class="p-3 rounded-4 bg-white border-start border-warning border-5 shadow-sm">
-                    <small class="text-muted fw-bold d-block mb-1" style="font-size:0.7rem;">TOTAL PENDAPATAN ONLINE</small>
-                    <h4 class="fw-bold text-primary mb-0" id="online-total-revenue">Rp 0</h4>
-                </div>
-            </div>
-            <div class="col-6 col-md-4">
-                <div class="p-3 rounded-4 bg-white border-start border-primary border-5 shadow-sm">
-                    <small class="text-muted fw-bold d-block mb-1" style="font-size:0.7rem;">JUMLAH ANTRIAN</small>
-                    <h4 class="fw-bold text-primary mb-0" id="online-total-orders">0 <small class="text-muted" style="font-size: 0.8rem;">Order</small></h4>
-                </div>
-            </div>
-            <div class="col-12 col-md-4">
-                <div class="p-3 rounded-4 bg-white border-start border-success border-5 shadow-sm">
-                    <small class="text-muted fw-bold d-block mb-1" style="font-size:0.7rem;">RATA-RATA ORDER</small>
-                    <h4 class="fw-bold text-success mb-0" id="online-avg-order">Rp 0</h4>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white p-4 rounded-4 shadow-sm border">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-shopping-cart me-2 text-warning"></i>PESANAN ONLINE MASUK</h5>
+        <!-- Contoh: tab-online yang sudah di-upgrade dengan kolom GPS dan status -->
+        <div id="tab-online" class="tab-pane-custom" style="display:none; padding:20px;">
+    <div class="card shadow-sm border-0" style="border-radius:20px; overflow:hidden;">
+        <div class="card-header bg-white border-0 pb-0">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="fw-bold text-primary mb-0">
+                    <i class="fas fa-shopping-cart me-2 text-warning"></i>PESANAN ONLINE MASUK
+                </h4>
                 <div class="trx-box bg-success">
                     <i class="fas fa-sync-alt fa-spin"></i> <span class="small">Monitoring Realtime</span>
                 </div>
             </div>
+        </div>
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light text-primary">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead style="background:#f8f9fc;">
                         <tr>
-                            <th>WAKTU</th>
-                            <th>PELANGGAN</th>
-                            <th>PESANAN</th>
-                            <th>TOTAL</th>
-                            <th>AKSI</th>
+                            <th class="text-primary fw-bold" style="font-size:0.95rem;">WAKTU</th>
+                            <th class="text-primary fw-bold" style="font-size:0.95rem;">PELANGGAN</th>
+                            <th class="text-primary fw-bold" style="font-size:0.95rem;">PESANAN</th>
+                            <th class="text-primary fw-bold" style="font-size:0.95rem;">TOTAL</th>
+                            <th class="text-primary fw-bold" style="font-size:0.95rem;">STATUS</th>
+                            <th class="text-primary fw-bold" style="font-size:0.95rem;">LOKASI GPS</th>
+                            <th class="text-primary fw-bold" style="font-size:0.95rem;">AKSI</th>
                         </tr>
                     </thead>
-                    <tbody id="online-orders-body">
-                    </tbody>
+                    <tbody id="online-orders-body"></tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
-        <div id="tab-riwayat" class="tab-pane-custom animate__animated animate__fadeIn" style="display:none;">
+       <div id="tab-riwayat" class="tab-pane-custom animate__animated animate__fadeIn" style="display:none;">
             <div class="container px-4 pt-5 pt-lg-4">
                 <div class="bg-white p-4 rounded-4 shadow-sm border">
                     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-3">
@@ -634,7 +635,7 @@
                             <div class="mb-3">
                                 <div class="input-group">
                                     <span class="input-group-text bg-white border-end-0"><i class="fas fa-user text-primary"></i></span>
-                                    <input type="text" id="custName" class="form-control border-start-0 fw-bold" placeholder="Nama Pelanggan...">
+                                    <input type="text" id="customer-name" class="form-control border-start-0 fw-bold" placeholder="Nama Pelanggan...">
                                 </div>
                             </div>
                             <div id="antar-fields" style="display: none;" class="mb-3 p-3 bg-light rounded-3 border">
@@ -742,9 +743,22 @@
     </div>
 </div>
 
+    </div>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue, remove, update, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+   import { 
+    getDatabase, 
+    ref, 
+    push,           // penting untuk create baru
+    set,
+    update,
+    remove,
+    onValue,
+    get,
+    child 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBWz63o_JFK3Ucvb7IuXI1cNO8SXMHvsEA",
@@ -927,16 +941,7 @@
     window.handlePaymentInput = (el) => { formatRupiahInput(el); calcChange(); };
     function calcChange() { const cashRaw = document.getElementById('cash-amount').value.replace(/\./g, '') || 0; const change = parseInt(cashRaw) - currentTotal; document.getElementById('change-amount').innerText = "Rp " + (change >= 0 ? change.toLocaleString() : 0); }
 
-    window.submitAndPrint = async () => {
-        const n = document.getElementById('custName').value;
-        if(!n || cart.length === 0) return Swal.fire('Gagal', 'Nama & Pesanan wajib ada', 'error');
-        await push(ref(db, 'transaksi'), { type: 'PENJUALAN', name: n, items: cart, total: currentTotal, service: serviceType, method: paymentType, bank: onlineMethod, petugas: document.getElementById('user-display').innerText, time: new Date().toISOString(), category: 'Penjualan Kasir' });
-        bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
-        document.getElementById('custName').value = ''; document.getElementById('cash-amount').value = ''; batalSemua();
-        Swal.fire('Sukses', 'Transaksi Berhasil', 'success'); loadLaporan();
-    };
-
-    window.submitKasMasuk = async () => {
+       window.submitKasMasuk = async () => {
         const amt = document.getElementById('masuk-amount').value.replace(/\./g, '');
         const desc = document.getElementById('masuk-desc').value;
         const cat = document.querySelector('input[name="masuk-type"]:checked').value;
@@ -1147,124 +1152,140 @@
             if (result.isConfirmed) { remove(ref(db, `master_menu/${id}`)); Toast.fire({ icon: 'success', title: 'Terhapus' }); }
         });
     };
+
+    // ────────────────────────────────────────────────
+    // Fungsi helper dari admin
+    // ────────────────────────────────────────────────
+    function getStatusBadge(status) {
+        if (status === 'Pending') return 'bg-warning text-dark';
+        if (status === 'Diterima') return 'bg-success';
+        if (status === 'Ditolak' || status === 'Dibatalkan') return 'bg-danger';
+        return 'bg-secondary';
+    }
+
+    function playNotif() {
+        const audio = new Audio('https://github.com/chuacarangki/toko_macca_kasir/raw/refs/heads/main/notif.mp3');
+        audio.play().catch(e => console.log("Notif suara tertunda interaksi user."));
+    }
+
+    // ────────────────────────────────────────────────
+    // Fungsi utama pesanan online (integrasi admin + kasir)
+    // ────────────────────────────────────────────────
 function listenOnlineOrders() {
-    const onlineRef = ref(db, 'pesanan_masuk');
-    onValue(onlineRef, (snapshot) => {
-        const data = snapshot.val();
-        const tbody = document.getElementById('online-orders-body');
-        const countBadge = document.getElementById('online-count');
-        
-        // Element statistik yang baru ditambahkan
-        const elTotalRevenue = document.getElementById('online-total-revenue');
-        const elTotalOrders = document.getElementById('online-total-orders');
-        const elAvgOrder = document.getElementById('online-avg-order');
+        const orderRef = ref(db, 'pesanan_masuk');
+        onValue(orderRef, (snapshot) => {
+            const tbody = document.getElementById('online-orders-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
 
-        if (!tbody) return;
-        tbody.innerHTML = '';
-        
-        // Inisialisasi variabel perhitungan
-        let totalPendingBadge = 0; // Untuk badge angka di sidebar/menu
-        let totalRevenueSum = 0;   // Untuk kotak Total Pendapatan
-        let activeOrdersCount = 0; // Untuk kotak Jumlah Antrian
+            const data = snapshot.val();
+            if (!data) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada pesanan masuk</td></tr>';
+                return;
+            }
 
-        if (data) {
-            let entries = Object.entries(data).sort((a, b) => b[1].timestamp - a[1].timestamp); 
+            // Urutkan terbaru dulu (berdasarkan timestamp)
+            const sortedKeys = Object.keys(data).sort((a, b) => data[b].timestamp - data[a].timestamp);
 
-            entries.forEach(([id, order]) => {
-                // Tampilkan hanya jika status Pending atau Diterima
-                if(order.status === 'Pending' || order.status === 'Diterima') {
-                    
-                    // --- LOGIKA PERHITUNGAN STATISTIK ---
-                    activeOrdersCount++; // Tambah jumlah antrian
-                    totalRevenueSum += parseInt(order.total_bayar || 0); // Tambah total pendapatan
-                    
-                    if(order.status === 'Pending') totalPendingBadge++;
-                    // ------------------------------------
+            let pendingCount = 0;
+            let totalRevenue = 0;
+            let orderCount = 0;
 
-                    const itemsText = order.items ? order.items.map(it => `${it.name} (x${it.qty})`).join(', ') : '-';
-                    
-                    let payBadge = 'bg-secondary';
-                    if(order.metode_bayar === 'Tunai (COD)') payBadge = 'bg-success';
-                    if(order.metode_bayar === 'Transfer Bank') payBadge = 'bg-primary';
-                    if(order.metode_bayar === 'QRIS') payBadge = 'bg-danger';
+            sortedKeys.forEach(key => {
+                const order = data[key];
+                
+                // --- BAGIAN YANG DIUBAH AGAR TIDAK MENGHILANG ---
+                // Kita izinkan status Proses, Menunggu Driver, Diantar, dan Sukses untuk tetap tampil
+                const statusTampil = ['Pending', 'Diterima', 'Proses', 'Menunggu Driver', 'Diantar', 'Sukses'];
+                if (!statusTampil.includes(order.status)) return;
 
-                    let statusColor = order.status === 'Pending' ? 'text-danger' : 'text-success';
-                    let statusIcon = order.status === 'Pending' ? 'fa-clock' : 'fa-check-circle';
+                orderCount++;
+                totalRevenue += Number(order.total_bayar || 0);
+                if (order.status === 'Pending') pendingCount++;
 
-                    let actionButton = '';
-                    if (order.status === 'Pending') {
-                        actionButton = `
-                            <div class="d-flex gap-1">
-                                <button class="btn btn-sm btn-success rounded-pill px-3" onclick="updateStatusPesanan('${id}', 'Diterima')">
-                                    <i class="fas fa-check me-1"></i> Terima
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger rounded-circle" onclick="updateStatusPesanan('${id}', 'Ditolak')">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        `;
-                    } else {
-                        actionButton = `
-                            <button class="btn btn-sm btn-primary rounded-pill px-3 w-100 animate__animated animate__pulse animate__infinite" onclick="prosesOnlineKeKasir('${id}')">
-                                <i class="fas fa-file-import me-1"></i> PROSES
-                            </button>
-                        `;
-                    }
+                const itemsText = order.items?.map(i => `${i.name} (x${i.qty})`).join('<br>') || '-';
 
-                    const row = `
-                        <tr class="animate__animated animate__fadeIn border-bottom">
-                            <td>
-                                <small class="fw-bold">${order.waktu.split(',')[1] || order.waktu}</small><br>
-                                <span class="badge bg-info text-dark" style="font-size:10px;">
-                                    <i class="fas fa-motorcycle"></i> ${order.tipe || 'Antar'}
-                                </span>
-                            </td>
-                            <td>
-                                <strong>${order.pelanggan}</strong><br>
-                                <small class="${statusColor} fw-bold" style="font-size:11px;">
-                                    <i class="fas ${statusIcon} me-1"></i>${order.status}
-                                </small>
-                            </td>
-                            <td>
-                                <div class="text-truncate" style="max-width:180px; font-size: 0.85rem;">${itemsText}</div>
-                                <span class="badge ${payBadge}" style="font-size:10px;">
-                                    <i class="fas fa-credit-card"></i> ${order.metode_bayar}
-                                </span>
-                            </td>
-                            <td class="fw-bold text-primary">Rp ${(order.total_bayar || 0).toLocaleString()}</td>
-                            <td style="vertical-align: middle;">${actionButton}</td>
-                        </tr>
+                const mapsLink = (order.lat && order.lng)
+                    ? `<a href="http://maps.google.com/maps?q=${order.lat},${order.lng}" target="_blank" class="btn btn-sm btn-maps">
+                        <i class="fas fa-directions me-1"></i> Rute
+                       </a>`
+                    : `<span class="text-muted small">Tanpa GPS</span>`;
+
+                // LOGIKA TOMBOL AKSI DISESUAIKAN DENGAN ALUR BARU
+                let actionHtml = '';
+                if (order.status === 'Pending') {
+                    actionHtml = `
+                        <button class="btn btn-sm btn-success me-1" onclick="updateStatusPesanan('${key}', 'Diterima')">Terima</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="updateStatusPesanan('${key}', 'Dibatalkan')">Batal</button>
                     `;
-                    tbody.innerHTML += row;
+                } else if (order.status === 'Diterima') {
+                    actionHtml = `
+                        <button class="btn btn-sm btn-primary" onclick="prosesOnlineKeKasir('${key}')">Proses ke Dapur</button>
+                    `;
+                } else if (order.status === 'Proses') {
+                    actionHtml = `
+                        <button class="btn btn-sm btn-warning fw-bold" onclick="updateStatusPesanan('${key}', 'Menunggu Driver')">SIAP SAJI</button>
+                    `;
+                } else if (order.status === 'Menunggu Driver') {
+                    actionHtml = `<span class="badge bg-info text-dark">PANGGIL DRIVER...</span>`;
+                } else if (order.status === 'Diantar') {
+                    actionHtml = `<span class="badge bg-dark">DIANTAR: ${order.driver || ''}</span>`;
+                } else if (order.status === 'Sukses') {
+                    actionHtml = `<span class="badge bg-success">SELESAI</span>`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="small">${order.waktu}</td>
+                    <td>
+                        <div class="fw-bold">${order.pelanggan}</div>
+                        <div class="small text-muted">${order.telepon || '-'}</div>
+                        <div class="small text-primary">${order.alamat || ''}</div>
+                    </td>
+                    <td class="small">${itemsText}</td>
+                    <td class="fw-bold text-primary">Rp ${Number(order.total_bayar || 0).toLocaleString()}</td>
+                    <td><span class="badge ${getStatusBadge(order.status)}">${order.status}</span></td>
+                    <td>${mapsLink}</td>
+                    <td>${actionHtml}</td>
+                `;
+                tbody.appendChild(tr);
+
+                // Notifikasi suara untuk pending baru
+                if (order.status === 'Pending' && !localStorage.getItem('alert_' + key)) {
+                    playNotif();
+                    localStorage.setItem('alert_' + key, 'true');
                 }
             });
-        }
 
-        // --- UPDATE TAMPILAN KOTAK STATISTIK ---
-        if (elTotalRevenue) elTotalRevenue.innerText = "Rp " + totalRevenueSum.toLocaleString();
-        if (elTotalOrders) elTotalOrders.innerHTML = `${activeOrdersCount} <small class="text-muted" style="font-size: 0.8rem;">Order</small>`;
-        
-        // Hitung rata-rata
-        const average = activeOrdersCount > 0 ? Math.round(totalRevenueSum / activeOrdersCount) : 0;
-        if (elAvgOrder) elAvgOrder.innerText = "Rp " + average.toLocaleString();
+            // Update badge pending di sidebar
+            const countBadge = document.getElementById('online-count');
+            if (countBadge) {
+                countBadge.textContent = pendingCount;
+                countBadge.style.display = pendingCount > 0 ? 'inline' : 'none';
+            }
 
-        // Update badge sidebar (jumlah pending)
-        if (countBadge) {
-            countBadge.innerText = totalPendingBadge;
-            countBadge.style.display = totalPendingBadge > 0 ? 'inline-block' : 'none';
-        }
+            // Jika tidak ada data yang ditampilkan
+            if (orderCount === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Tidak ada pesanan aktif</td></tr>';
+            }
+        });
+    }
 
-        if (activeOrdersCount === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Tidak ada pesanan online aktif.</td></tr>';
-        }
-    });
-}
+    // ────────────────────────────────────────────────
+    // Fungsi update status (kompatibel dengan admin & kasir)
+    // ────────────────────────────────────────────────
+    window.updateStatusPesanan = (id, newStatus) => {
+        update(ref(db, `pesanan_masuk/${id}`), { status: newStatus });
+        // Optional: refresh UI atau beri notif
+    };
 
-        
+    // ────────────────────────────────────────────────
+    // Jalankan listener saat halaman dimuat
+    // ────────────────────────────────────────────────
+    listenOnlineOrders();
 
-// Jalankan saat startup
-listenOnlineOrders();
-
+    // ... sisanya kode JavaScript dari file KASIR OFF7.html kamu ...
+    // (fungsi cart, saveTransaction, loadLaporan, switchTab, dll tetap seperti aslinya)
 window.updateStatusPesanan = (orderId, statusBaru) => {
     update(ref(db, `pesanan_masuk/${orderId}`), { status: statusBaru })
     .then(() => {
@@ -1349,6 +1370,73 @@ function updateOnlineStats(ordersArray) {
         onlineCountBadge.style.display = totalOrders > 0 ? 'inline-block' : 'none';
     }
 }
+window.submitAndPrint = async () => {
+    // Ambil input nama dengan ID 'customer-name' (sesuai file backup kamu)
+    const nameInput = document.getElementById('customer-name');
+    const cashInput = document.getElementById('cash-amount');
+
+    // Validasi Dasar
+    if (!nameInput || !nameInput.value) {
+        return Swal.fire('Perhatian', 'Nama pelanggan wajib diisi!', 'warning');
+    }
+    if (cart.length === 0) {
+        return Swal.fire('Gagal', 'Keranjang masih kosong!', 'error');
+    }
+
+    // Konversi nominal bayar (hapus titik format rupiah)
+    const nominalBayar = parseInt(cashInput.value.replace(/\./g, '')) || 0;
+
+    // Validasi Pembayaran
+    if (paymentType === 'TUNAI' && nominalBayar < currentTotal) {
+        return Swal.fire('Uang Kurang', 'Jumlah bayar tidak mencukupi!', 'error');
+    }
+    if (paymentType === 'ONLINE' && !onlineMethod) {
+    return Swal.fire('Perhatian', 'Pilih bank untuk pembayaran ONLINE (BNI/QRIS atau BRI/Transfer)', 'warning');
+}
+
+    Swal.fire({
+        title: 'Menyimpan Transaksi...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+
+    try {
+        // Simpan ke Firebase
+        // Pastikan variabel 'db', 'push', dan 'ref' sudah terimport di atas
+        await push(ref(db, 'transaksi'), {
+            type: 'PENJUALAN',
+            name: nameInput.value,
+            items: cart,
+            total: currentTotal,
+            service: serviceType,
+            method: paymentType,
+            bank: (paymentType === 'ONLINE' ? onlineMethod : '-'),
+            petugas: document.getElementById('user-display')?.innerText || 'Admin',
+            time: new Date().toISOString(),
+            category: 'Penjualan Kasir'
+        });
+
+        // Cetak Struk
+        window.print();
+
+        // Tutup Modal
+        const modalEl = document.getElementById('checkoutModal');
+        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (modalInstance) modalInstance.hide();
+
+        // Reset
+        nameInput.value = '';
+        cashInput.value = '';
+        if (typeof batalSemua === 'function') batalSemua();
+        
+        Swal.fire('Sukses', 'Transaksi Berhasil Disimpan', 'success');
+        if (typeof loadLaporan === 'function') loadLaporan();
+
+    } catch (error) {
+        console.error("Firebase Error:", error);
+        Swal.fire('Error', 'Gagal menyimpan: ' + error.message, 'error');
+    }
+};
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
