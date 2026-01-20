@@ -331,7 +331,7 @@
             </div>
         </div>
         <!-- Contoh: tab-online yang sudah di-upgrade dengan kolom GPS dan status -->
-        <div id="tab-online" class="tab-pane-custom" style="display:none; padding:20px;">
+       <div id="tab-online" class="tab-pane-custom" style="display:none; padding:20px;">
     <div class="card shadow-sm border-0" style="border-radius:20px; overflow:hidden;">
         <div class="card-header bg-white border-0 pb-0">
             <div class="d-flex justify-content-between align-items-center">
@@ -352,6 +352,8 @@
                             <th class="text-primary fw-bold" style="font-size:0.95rem;">PELANGGAN</th>
                             <th class="text-primary fw-bold" style="font-size:0.95rem;">PESANAN</th>
                             <th class="text-primary fw-bold" style="font-size:0.95rem;">TOTAL</th>
+                            <!-- Kolom baru: METODE BAYAR (ditambahkan di sini) -->
+                            <th class="text-primary fw-bold" style="font-size:0.95rem;">METODE BAYAR</th>
                             <th class="text-primary fw-bold" style="font-size:0.95rem;">STATUS</th>
                             <th class="text-primary fw-bold" style="font-size:0.95rem;">LOKASI GPS</th>
                             <th class="text-primary fw-bold" style="font-size:0.95rem;">AKSI</th>
@@ -1180,7 +1182,7 @@ function listenOnlineOrders() {
 
             const data = snapshot.val();
             if (!data) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada pesanan masuk</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">Belum ada pesanan masuk</td></tr>'; // Ubah colspan dari 7 jadi 8
                 return;
             }
 
@@ -1234,6 +1236,18 @@ function listenOnlineOrders() {
                     actionHtml = `<span class="badge bg-success">SELESAI</span>`;
                 }
 
+                // --- Penambahan Badge Metode Bayar (baru di sini) ---
+                let metodeBayarBadge = '';
+                if (order.metode_bayar === 'COD') {
+                    metodeBayarBadge = '<span class="badge bg-success">COD</span>';
+                } else if (order.metode_bayar === 'Bank') {
+                    metodeBayarBadge = '<span class="badge bg-primary">TRANSFER</span>';
+                } else if (order.metode_bayar === 'QRIS') {
+                    metodeBayarBadge = '<span class="badge bg-info">QRIS</span>';
+                } else {
+                    metodeBayarBadge = '<span class="badge bg-secondary">Tidak Diketahui</span>'; // Fallback jika data hilang
+                }
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="small">${order.waktu}</td>
@@ -1244,6 +1258,8 @@ function listenOnlineOrders() {
                     </td>
                     <td class="small">${itemsText}</td>
                     <td class="fw-bold text-primary">Rp ${Number(order.total_bayar || 0).toLocaleString()}</td>
+                    <!-- Kolom baru: METODE BAYAR (ditambahkan di sini) -->
+                    <td>${metodeBayarBadge}</td>
                     <td><span class="badge ${getStatusBadge(order.status)}">${order.status}</span></td>
                     <td>${mapsLink}</td>
                     <td>${actionHtml}</td>
@@ -1266,18 +1282,10 @@ function listenOnlineOrders() {
 
             // Jika tidak ada data yang ditampilkan
             if (orderCount === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Tidak ada pesanan aktif</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">Tidak ada pesanan aktif</td></tr>'; // Ubah colspan dari 7 jadi 8
             }
         });
     }
-
-    // ────────────────────────────────────────────────
-    // Fungsi update status (kompatibel dengan admin & kasir)
-    // ────────────────────────────────────────────────
-    window.updateStatusPesanan = (id, newStatus) => {
-        update(ref(db, `pesanan_masuk/${id}`), { status: newStatus });
-        // Optional: refresh UI atau beri notif
-    };
 
     // ────────────────────────────────────────────────
     // Jalankan listener saat halaman dimuat
