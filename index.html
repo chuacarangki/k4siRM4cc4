@@ -179,8 +179,6 @@
 #tab-online tr:hover {
     background-color: rgba(0,74,173,0.03);
 }
-#tab-online .btn-group-sm .btn { padding: 4px 8px; font-size: 0.7rem; }
-#tab-online .btn-group-sm .badge { padding: 4px 8px; font-size: 0.7rem; }
     </style>
 </head>
 <body>
@@ -949,42 +947,27 @@
     };
     
     window.renderCart = () => {
-    const foodTotal = cart.reduce((a, b) => a + (b.p * b.qty), 0);
-    
-    // Ongkir: bersihkan dulu pakai cleanToNumber
-    const shipRaw = cleanToNumber(document.getElementById('shippingFee').value);
-    const totalShip = (serviceType === 'Antar') ? shipRaw : 0;
-    
-    currentTotal = foodTotal + totalShip;
-    
-    document.getElementById('floating-cart').style.display = cart.length > 0 ? 'block' : 'none';
-    document.getElementById('cart-count').innerText = cart.reduce((acc, i) => acc + i.qty, 0);
-    document.getElementById('cart-total-bar').innerText = formatRupiah(currentTotal);
-    document.getElementById('checkout-total-text').innerText = "Rp " + formatRupiah(currentTotal);
-    
-    if (cart.length > 0) {
-        // ... kode cart preview & checkout list tetap ...
-    }
-    
-    calcChange();
-};
+        const foodTotal = cart.reduce((a, b) => a + (b.p * b.qty), 0);
+        const shipRaw = document.getElementById('shippingFee').value.replace(/\./g, '') || 0;
+        const totalShip = (serviceType === 'Antar') ? parseInt(shipRaw) : 0;
+        currentTotal = foodTotal + totalShip;
+        document.getElementById('floating-cart').style.display = cart.length > 0 ? 'block' : 'none';
+        document.getElementById('cart-count').innerText = cart.reduce((acc, i) => acc + i.qty, 0);
+        document.getElementById('cart-total-bar').innerText = currentTotal.toLocaleString();
+        document.getElementById('checkout-total-text').innerText = "Rp " + currentTotal.toLocaleString();
+        if(cart.length > 0) {
+            document.getElementById('cart-preview').innerHTML = cart.slice(-3).map(it => `<div class="p-2 mb-1 bg-white rounded shadow-sm border-start border-primary border-4 d-flex justify-content-between"><span class="small fw-bold">${it.n}</span><span class="badge bg-primary rounded-pill">${it.qty}x</span></div>`).join('');
+            document.getElementById('checkout-list').innerHTML = cart.map((it, i) => `<div class="d-flex justify-content-between p-2 border-bottom"><div><b>${it.n}</b><br><small>Rp ${(it.p * it.qty).toLocaleString()}</small></div><div class="d-flex align-items-center gap-2"><button class="btn btn-sm btn-light border" onclick="updateQty(${i}, -1)"><i class="fas fa-minus fa-xs"></i></button><b>${it.qty}</b><button class="btn btn-sm btn-light border" onclick="updateQty(${i}, 1)"><i class="fas fa-plus fa-xs"></i></button></div></div>`).join('');
+        }
+        calcChange();
+    };
 
     window.updateQty = (i, ch) => { cart[i].qty += ch; if(cart[i].qty <= 0) cart.splice(i, 1); renderCart(); };
     window.batalSemua = () => { cart = []; renderCart(); };
     window.setService = (t) => { serviceType = t; ['dinein','takeaway','antar'].forEach(id => { const el = document.getElementById('btn-'+id); if(el) el.classList.remove('active'); }); document.getElementById('btn-'+t.toLowerCase().replace(' ','')).classList.add('active'); document.getElementById('antar-fields').style.display = (t === 'Antar') ? 'block' : 'none'; renderCart(); };
     window.setPaymentMethod = (m) => { paymentType = m; document.getElementById('pay-tunai').classList.toggle('active', m === 'TUNAI'); document.getElementById('pay-online').classList.toggle('active', m === 'ONLINE'); document.getElementById('online-section').style.display = m === 'ONLINE' ? 'block' : 'none'; document.getElementById('cash-section').style.display = m === 'ONLINE' ? 'none' : 'block'; };
     window.setOnlineMethod = (b) => { onlineMethod = b; document.getElementById('pay-qris').classList.toggle('active', b === 'BNI'); document.getElementById('pay-tf').classList.toggle('active', b === 'BRI'); };
-    window.formatRupiahInput = (el) => {
-    // Ambil nilai mentah, bersihkan, ubah ke number
-    const num = cleanToNumber(el.value);
-    
-    // Format ulang ke format Indonesia (titik pemisah)
-    if (num === 0) {
-        el.value = '';
-    } else {
-        el.value = formatRupiah(num);
-    }
-};
+    window.formatRupiahInput = (el) => { el.value = el.value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, "."); };
     window.handleShippingInput = (el) => { formatRupiahInput(el); renderCart(); };
     window.handlePaymentInput = (el) => { formatRupiahInput(el); calcChange(); };
     function calcChange() { const cashRaw = document.getElementById('cash-amount').value.replace(/\./g, '') || 0; const change = parseInt(cashRaw) - currentTotal; document.getElementById('change-amount').innerText = "Rp " + (change >= 0 ? change.toLocaleString() : 0); }
@@ -1212,7 +1195,7 @@
     }
 
     function playNotif() {
-        const audio = new Audio('https://chuacarangki.github.io/toko_macca_kasir/notif.mp3');
+        const audio = new Audio('https://github.com/chuacarangki/toko_macca_kasir/raw/refs/heads/main/notif.mp3');
         audio.play().catch(e => console.log("Notif suara tertunda interaksi user."));
     }
 
@@ -1273,30 +1256,26 @@ function listenOnlineOrders() {
 
                 // LOGIKA TOMBOL AKSI DISESUAIKAN DENGAN ALUR BARU
                 let actionHtml = '';
-if (order.status === 'Pending') {
-    actionHtml = `
-        <button class="btn btn-sm btn-success me-1" onclick="updateStatusPesanan('${order.key}', 'Diterima')">Terima</button>
-        <button class="btn btn-sm btn-outline-danger" onclick="updateStatusPesanan('${order.key}', 'Dibatalkan')">Batal</button>
-    `;
-} else if (order.status === 'Diterima') {
-    actionHtml = `<button class="btn btn-sm btn-primary" onclick="prosesOnlineKeKasir('${order.key}')">Proses ke Dapur</button>`;
-} else if (order.status === 'Proses') {
-    actionHtml = `<button class="btn btn-sm btn-warning fw-bold" onclick="updateStatusPesanan('${order.key}', 'Menunggu Driver')">SIAP SAJI</button>`;
-} else if (order.status === 'Menunggu Driver') {
-    actionHtml = `<span class="badge bg-info text-dark">PANGGIL DRIVER...</span>`;
-} else if (order.status === 'Diantar') {
-    actionHtml = `<span class="badge bg-dark">DIANTAR: ${order.driver || ''}</span>`;
-} else if (order.status === 'Sukses' || order.status.includes('Selesai')) {
-    // **TOMBOL CETAK ULANG BARU!**
-    actionHtml = `
-        <div class="btn-group btn-group-sm" role="group">
-            <button class="btn btn-success" onclick="cetakStrukUlang('${order.trx_kasir_id || order.key}')" title="Cetak Struk">
-                <i class="fas fa-print"></i>
-            </button>
-            <span class="badge bg-success ms-1">SELESAI</span>
-        </div>
-    `;
-}
+                if (order.status === 'Pending') {
+                    actionHtml = `
+                        <button class="btn btn-sm btn-success me-1" onclick="updateStatusPesanan('${order.key}', 'Diterima')">Terima</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="updateStatusPesanan('${order.key}', 'Dibatalkan')">Batal</button>
+                    `;
+                } else if (order.status === 'Diterima') {
+                    actionHtml = `
+                        <button class="btn btn-sm btn-primary" onclick="prosesOnlineKeKasir('${order.key}')">Proses ke Dapur</button>
+                    `;
+                } else if (order.status === 'Proses') {
+                    actionHtml = `
+                        <button class="btn btn-sm btn-warning fw-bold" onclick="updateStatusPesanan('${order.key}', 'Menunggu Driver')">SIAP SAJI</button>
+                    `;
+                } else if (order.status === 'Menunggu Driver') {
+                    actionHtml = `<span class="badge bg-info text-dark">PANGGIL DRIVER...</span>`;
+                } else if (order.status === 'Diantar') {
+                    actionHtml = `<span class="badge bg-dark">DIANTAR: ${order.driver || ''}</span>`;
+                } else if (order.status === 'Sukses') {
+                    actionHtml = `<span class="badge bg-success">SELESAI</span>`;
+                }
 
                 // --- Penambahan Badge Metode Bayar (baru di sini) ---
                 let metodeBayarBadge = '';
@@ -1383,299 +1362,125 @@ window.updateStatusPesanan = (orderId, statusBaru) => {
         }
     });
 };
-window.prosesOnlineKeKasir = async (orderId) => {
-    try {
-        const snapshot = await get(child(ref(db), `pesanan_masuk/${orderId}`));
-        if (!snapshot.exists()) {
-            return Swal.fire('Error', 'Pesanan tidak ditemukan', 'error');
+window.prosesOnlineKeKasir = (orderId) => {
+    get(child(ref(db), `pesanan_masuk/${orderId}`)).then((snapshot) => {
+        if (snapshot.exists()) {
+            const order = snapshot.val();
+            
+            // 1. Masukkan data ke keranjang kasir
+            cart = order.items.map(item => ({
+                id: item.id,
+                name: item.name,
+                price: parseInt(item.price),
+                qty: parseInt(item.qty)
+            }));
+
+            // 2. Render keranjang agar muncul di UI
+            renderCart();
+
+            // 3. AUTO-FILL Metode Pembayaran di Kasir sesuai pilihan pelanggan
+            const payMethodSelect = document.getElementById('payMethod');
+            if (order.metode_bayar === 'Tunai (COD)') {
+                payMethodSelect.value = 'Tunai';
+            } else if (order.metode_bayar === 'Transfer Bank') {
+                payMethodSelect.value = 'BRI';
+            } else if (order.metode_bayar === 'QRIS') {
+                payMethodSelect.value = 'BNI';
+            }
+
+            // 4. AUTO-FILL Nominal Bayar agar pas (tidak ada kembalian)
+            // Ini agar fungsi saveTransaction Anda bisa langsung berjalan
+            document.getElementById('payAmount').value = order.total_bayar;
+
+            // 5. Pindah ke tab kasir
+            switchTab('tab-kasir', document.getElementById('btn-tab-kasir'));
+            
+            // 6. Jalankan fungsi simpan transaksi milik Anda
+            // Ini akan otomatis memotong stok, menambah laporan, dan mengisi saldo BRI/BNI/KASIR
+            saveTransaction();
+
+            // 7. Update status di Firebase agar pesanan hilang dari daftar antrean online
+            update(ref(db, `pesanan_masuk/${orderId}`), { status: 'Selesai & Masuk Laporan' });
+
+            Swal.fire({
+                title: 'Berhasil!',
+                text: `Pesanan ${order.pelanggan} telah diproses dan saldo ${payMethodSelect.value} bertambah.`,
+                icon: 'success',
+                timer: 2000
+            });
         }
-
-        const order = snapshot.val();
-
-        cart = order.items.map(item => ({
-            n: item.name,
-            p: parseInt(item.price),
-            qty: parseInt(item.qty)
-        }));
-
-        document.getElementById('customer-name').value = order.pelanggan || 'Pelanggan Online';
-        if (order.alamat) document.getElementById('custAddress').value = order.alamat;
-
-        // Ongkir: format langsung ke titik
-        if (order.ongkir) {
-            const ongkirNum = parseInt(order.ongkir) || 0;
-            document.getElementById('shippingFee').value = formatRupiah(ongkirNum);
-        } else {
-            document.getElementById('shippingFee').value = '0';
-        }
-
-        // Untuk COD: isi cash-amount langsung dengan total (format titik)
-        if (order.metode_bayar?.includes('COD') || order.metode_bayar === 'Tunai') {
-            setPaymentMethod('TUNAI');
-            const totalNum = parseInt(order.total_bayar) || 0;
-            document.getElementById('cash-amount').value = formatRupiah(totalNum);
-        } else if (order.metode_bayar?.includes('QRIS')) {
-            setPaymentMethod('ONLINE');
-            setOnlineMethod('BNI');
-        } else {
-            setPaymentMethod('ONLINE');
-            setOnlineMethod('BRI');
-        }
-
-        setService('Antar');
-        renderCart();
-
-        const checkoutModal = new bootstrap.Modal(document.getElementById('checkoutModal'));
-        checkoutModal.show();
-
-        localStorage.setItem('currentOnlineOrderId', orderId);
-
-        Swal.fire({
-            title: 'Pesanan online dimuat!',
-            text: `Total: Rp ${formatRupiah(order.total_bayar || 0)} siap diproses.`,
-            icon: 'info',
-            timer: 2500
-        });
-
-    } catch (error) {
-        Swal.fire('Gagal memuat pesanan', error.message, 'error');
-    }
+    });
 };
-// Jalankan listener saat halaman dimuat
-listenOnlineOrders();
 window.submitAndPrint = async () => {
+    // Ambil input nama dengan ID 'customer-name' (sesuai file backup kamu)
     const nameInput = document.getElementById('customer-name');
     const cashInput = document.getElementById('cash-amount');
 
-    if (!nameInput.value.trim()) {
-        return Swal.fire('Nama pelanggan wajib diisi!', '', 'warning');
+    // Validasi Dasar
+    if (!nameInput || !nameInput.value) {
+        return Swal.fire('Perhatian', 'Nama pelanggan wajib diisi!', 'warning');
     }
     if (cart.length === 0) {
-        return Swal.fire('Keranjang masih kosong!', '', 'error');
+        return Swal.fire('Gagal', 'Keranjang masih kosong!', 'error');
     }
 
-    // Parsing nominal bayar – pakai cleanToNumber supaya aman
-    const nominalBayar = cleanToNumber(cashInput.value);
+    // Konversi nominal bayar (hapus titik format rupiah)
+    const nominalBayar = parseInt(cashInput.value.replace(/\./g, '')) || 0;
 
+    // Validasi Pembayaran
     if (paymentType === 'TUNAI' && nominalBayar < currentTotal) {
-        return Swal.fire('Uang pembayaran kurang!', 
-            `Total: Rp ${formatRupiah(currentTotal)}\nBayar: Rp ${formatRupiah(nominalBayar)}`, 
-            'error');
+        return Swal.fire('Uang Kurang', 'Jumlah bayar tidak mencukupi!', 'error');
     }
-
     if (paymentType === 'ONLINE' && !onlineMethod) {
-        return Swal.fire('Pilih metode online (BNI/QRIS)!', '', 'warning');
-    }
+    return Swal.fire('Perhatian', 'Pilih bank untuk pembayaran ONLINE (BNI/QRIS atau BRI/Transfer)', 'warning');
+}
 
-    Swal.fire({ title: 'Menyimpan transaksi...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    Swal.fire({
+        title: 'Menyimpan Transaksi...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
 
     try {
-        // CEK APAKAH INI PESANAN ONLINE
-        const currentOnlineOrderId = localStorage.getItem('currentOnlineOrderId');
-        const isOnlineOrder = !!currentOnlineOrderId;
-
-        const payload = {
+        // Simpan ke Firebase
+        // Pastikan variabel 'db', 'push', dan 'ref' sudah terimport di atas
+        await push(ref(db, 'transaksi'), {
             type: 'PENJUALAN',
             name: nameInput.value,
             items: cart,
             total: currentTotal,
             service: serviceType,
             method: paymentType,
-            bank: paymentType === 'ONLINE' ? onlineMethod : '-',
-            petugas: document.getElementById('user-display').innerText,
+            bank: (paymentType === 'ONLINE' ? onlineMethod : '-'),
+            petugas: document.getElementById('user-display')?.innerText || 'Admin',
             time: new Date().toISOString(),
-            category: isOnlineOrder ? 'Pesanan Online' : 'Penjualan Kasir',
-            // TAMBAHAN UNTUK ONLINE ORDER
-            isOnlineOrder: isOnlineOrder,
-            onlineOrderId: currentOnlineOrderId || null,
-            alamat: document.getElementById('custAddress').value || ''
-        };
+            category: 'Penjualan Kasir'
+        });
 
-        // Simpan ke Firebase
-        const newTrxRef = await push(ref(db, 'transaksi'), payload);
-        const newTrxId = newTrxRef.key;
-
-        // JIKA ONLINE ORDER, UPDATE STATUS PESANAN
-        if (isOnlineOrder) {
-            await update(ref(db, `pesanan_masuk/${currentOnlineOrderId}`), { 
-                status: 'Selesai - Struk #' + newTrxId.substring(0, 8),
-                trx_kasir_id: newTrxId,
-                diproses_oleh: payload.petugas,
-                waktu_proses: new Date().toISOString()
-            });
-            localStorage.removeItem('currentOnlineOrderId'); // clear
-        }
-
-      // CETAK STRUK
+        // Cetak Struk
         window.print();
 
-        // Reset form
-        bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+        // Tutup Modal
+        const modalEl = document.getElementById('checkoutModal');
+        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (modalInstance) modalInstance.hide();
+
+        // Reset
         nameInput.value = '';
         cashInput.value = '';
-        document.getElementById('shippingFee').value = '0';
-        batalSemua();
-
-        Swal.fire('Sukses!', 'Transaksi tersimpan & struk dicetak', 'success');
-        loadLaporan();
+        if (typeof batalSemua === 'function') batalSemua();
+        
+        Swal.fire('Sukses', 'Transaksi Berhasil Disimpan', 'success');
+        if (typeof loadLaporan === 'function') loadLaporan();
 
     } catch (error) {
-        Swal.fire('Gagal menyimpan', error.message, 'error');
+        console.error("Firebase Error:", error);
+        Swal.fire('Error', 'Gagal menyimpan: ' + error.message, 'error');
     }
 };
-// CETAK ULANG STRUK untuk pesanan online yang sudah selesai
-window.cetakStrukUlang = (trxId) => {
-    if (!trxId) return Swal.fire('Error', 'ID transaksi tidak ditemukan', 'error');
-    
-    // Cek di transaksi atau pesanan_masuk
-    get(child(ref(db), `transaksi/${trxId}`)).then(snapshot => {
-        let trxData = snapshot.val();
-        
-        if (!trxData) {
-            // Fallback ke pesanan_masuk jika trx_id tidak ada
-            get(child(ref(db), `pesanan_masuk/${trxId}`)).then(snap2 => {
-                trxData = snap2.val();
-                if (!trxData) return Swal.fire('Error', 'Data tidak ditemukan', 'error');
-                
-                showPrintPreview(trxData, trxId, true); // true = pesanan_masuk
-            });
-        } else {
-            showPrintPreview(trxData, trxId, false);
-        }
-    });
-};
 
-// Tampilkan preview & print struk
-function showPrintPreview(trx, trxId, isPesananMasuk = false) {
-    const itemsHtml = (trx.items || []).map(it => 
-        `${it.qty || 1}x ${it.n || it.name} ........ Rp ${(it.p * (it.qty || 1)).toLocaleString()}`
-    ).join('\n');
-    
-    const strukContent = `
-<div style="font-family: 'Courier New', monospace; max-width: 300px; margin: 0 auto; padding: 20px;">
-    <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 15px;">
-        <h3 style="margin: 0; font-size: 18px;">LESEHAN MACCA</h3>
-        <small style="color: #666;">PESANAN ONLINE #${trxId.substring(0,8)}</small>
-    </div>
-    
-    <div style="margin-bottom: 15px;">
-        <div>Pelanggan: ${trx.name || trx.pelanggan}</div>
-        ${trx.alamat ? `<div>Alamat: ${trx.alamat}</div>` : ''}
-        <div>Waktu: ${new Date(trx.time || trx.timestamp).toLocaleString('id-ID')}</div>
-        <div>Kasir: ${trx.petugas || trx.diproses_oleh}</div>
-    </div>
-    
-    <div style="border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc; padding: 10px 0; margin: 10px 0;">
-${itemsHtml}
-    </div>
-    
-    <div style="text-align: right; font-weight: bold; font-size: 16px;">
-        TOTAL: Rp ${trx.total?.toLocaleString() || trx.total_bayar?.toLocaleString()}
-    </div>
-    
-    <div style="text-align: center; margin-top: 20px; font-size: 10px; color: #666;">
-        ${isPesananMasuk ? 'PESANAN ONLINE - Siap Diantar' : 'Terima kasih telah berbelanja'}
-        <br>Struk ini sah sebagai bukti pembayaran
-    </div>
-</div>
-    `;
-    
-    // Tampilkan di modal preview (opsional) lalu print
-    Swal.fire({
-        title: 'Preview Struk',
-        html: strukContent,
-        width: '400px',
-        showCancelButton: true,
-        confirmButtonText: 'CETAK SEKARANG',
-        cancelButtonText: 'Tutup',
-        customClass: { popup: 'text-left', confirmButton: 'btn-success', cancelButton: 'btn-secondary' }
-    }).then(result => {
-        if (result.isConfirmed) {
-            // Buat elemen temporary untuk print
-            const printWin = window.open('', '_blank');
-            printWin.document.write(`
-                <html>
-                <head><title>Struk - Lesehan Macca</title>
-                <style>
-                    @media print { body { margin: 0; font-family: 'Courier New', monospace; font-size: 12px; } }
-                    body { font-family: 'Courier New', monospace; max-width: 300px; margin: 20px auto; }
-                </style></head>
-                <body>${strukContent}</body>
-                </html>
-            `);
-            printWin.document.close();
-            printWin.focus();
-            printWin.print();
-            printWin.close();
-        }
-    });
-}
-// Fungsi untuk membersihkan input menjadi angka murni (handle titik, koma, spasi, dll)
-function cleanToNumber(str) {
-    if (!str) return 0;
-    // Hapus semua karakter non-digit (titik, koma, spasi, Rp, dll)
-    const cleaned = str.replace(/[^0-9]/g, '');
-    return parseInt(cleaned) || 0;
-}
-
-// Bersihkan input jadi angka murni + paksa format TITIK
-function forceDotFormat(el) {
-    if (!el) return;
-    
-    // Ambil nilai, hapus SEMUA non-digit dulu
-    let val = el.value.replace(/[^0-9]/g, '');  // hilangkan koma, titik, spasi, Rp, dll
-    
-    if (!val) {
-        el.value = '';
-        return;
-    }
-    
-    const num = parseInt(val);
-    // Format ULANG pakai titik (Indonesia style)
-    el.value = num.toLocaleString('id-ID');  // hasil: 69.000
-}
-
-// Fungsi khusus untuk input yang mau dipaksa titik
-window.formatRupiahInput = (el) => {
-    // Panggil forceDotFormat setiap ketik
-    forceDotFormat(el);
-};
-// Reset SEMUA setelah print berhasil
-checkoutModal.hide();  // atau pakai bootstrap.Modal.getInstance(...).hide()
-
-// 1. Kosongkan keranjang
-cart = [];
-batalSemua();  // kalau fungsi ini sudah ada, panggil aja
-
-// 2. Kosongkan semua input di modal checkout
-document.getElementById('customer-name').value = '';
-document.getElementById('custAddress').value = '';
-document.getElementById('shippingFee').value = '0';
-document.getElementById('cash-amount').value = '';
-
-// 3. Kembalikan ke default service & payment
-setService('Dine In');          // atau 'Take Away' kalau lebih sering
-setPaymentMethod('TUNAI');      // default ke tunai
-onlineMethod = '';              // kosongkan pilihan bank online
-
-// 4. Sembunyikan field Antar kalau sebelumnya muncul
-document.getElementById('antar-fields').style.display = 'none';
-
-// 5. Render ulang floating cart supaya langsung hilang
-renderCart();                   // ini penting, biar floating cart langsung hide
-
-// 6. Optional: fokus ke search menu biar siap transaksi baru
-document.getElementById('kasir-search').focus();
-
-// Tampilkan notif sukses
-Swal.fire({
-    title: 'Transaksi Selesai!',
-    text: 'Semua sudah direset. Siap untuk pesanan berikutnya.',
-    icon: 'success',
-    timer: 2000
-});
-
-loadLaporan();  // refresh dashboard & laporan
+// Jalankan listener saat halaman dimuat
+listenOnlineOrders();
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
