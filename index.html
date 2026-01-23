@@ -1604,15 +1604,36 @@ window.submitAndPrint = async () => {
             category: 'Penjualan Kasir'
         });
 
-        // 2. PROSES CETAK STRUK (RAWBT & THERMAL SAFE)
-        const namaPetugas = document.getElementById('user-display')?.innerText || 'Admin';
-        
-        let strukText = "      LESEHAN MACCA\n";
-        strukText += "--------------------------------\n";
-        strukText += `Tgl: ${new Date().toLocaleString('id-ID')}\n`;
-        strukText += `Kasir: ${namaPetugas}\n`;
-        strukText += `Plgn: ${nameInput.value}\n`;
-        strukText += "--------------------------------\n";
+        // 2. PROSES CETAK STRUK
+const namaPetugas = document.getElementById('user-display')?.innerText || 'Admin';
+
+let strukText = "      LESEHAN MACCA\n";
+strukText += "--------------------------------\n";
+strukText += `Tgl: ${new Date().toLocaleString('id-ID')}\n`;
+strukText += `Kasir: ${namaPetugas}\n`;
+strukText += `Plgn: ${nameInput.value}\n`;
+strukText += "--------------------------------\n";
+
+cart.forEach(item => {
+    // PERBAIKAN DI SINI:
+    // Kita cek apakah propertinya bernama 'nama' atau 'name' agar tidak kosong
+    const namaMenu = item.nama || item.name || "Menu"; 
+    const qty = item.qty || 0;
+    const harga = item.harga || item.price || 0;
+    const subtotal = qty * harga;
+
+    // Cetak Nama Menu
+    strukText += `${namaMenu.toUpperCase()}\n`;
+    
+    // Cetak Qty x Harga di baris bawahnya dengan rata kanan-kiri
+    const barisHarga = `${qty} x ${harga.toLocaleString('id-ID')}`;
+    const barisSubtotal = subtotal.toLocaleString('id-ID');
+    const spasi = 32 - barisHarga.length - barisSubtotal.length;
+    
+    strukText += barisHarga + " ".repeat(Math.max(0, spasi)) + barisSubtotal + "\n";
+});
+
+strukText += "--------------------------------\n";
 
         cart.forEach(item => {
             const namaItem = item.nama || 'Item';
