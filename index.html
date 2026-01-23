@@ -1652,15 +1652,25 @@ if(paymentType === 'TUNAI') {
 
 strukText += "--------------------------------\n";
 strukText += "    TERIMA KASIH ATAS\n";
-strukText += "      KUNJUNGAN ANDA\n\n\n\n";
+strukText += "      KUNJUNGAN ANDA\n";
+strukText += "--------------------------------\n";
 
-// Eksekusi Cetak ke RawBT atau Browser
+// --- DISINI POSISI PENAMBAHAN QRIS ---
+if (paymentType === 'ONLINE' && onlineMethod === 'QRIS') {
+    strukText += "       SCAN UNTUK BAYAR\n\n";
+    // RawBT akan mengubah tag <QR> menjadi gambar QR Code otomatis
+    strukText += "<QR>https://lesehanmacca.com/lesehan_macca-qr.png</QR>\n";
+    strukText += "\n"; 
+}
+
+strukText += "\n\n\n\n"; // Enter tambahan agar kertas bisa disobek
+
+// 3. Eksekusi Cetak ke RawBT atau Browser
 if (/Android/i.test(navigator.userAgent)) {
     window.location.href = "rawbt:base64," + btoa(unescape(encodeURIComponent(strukText)));
 } else {
     window.print();
 }
-
         // 3. Reset UI
         const modalEl = document.getElementById('checkoutModal');
         const modalInstance = bootstrap.Modal.getInstance(modalEl);
