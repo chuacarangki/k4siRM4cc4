@@ -1571,13 +1571,18 @@ window.submitAndPrint = async () => {
     if (!nameInput || !nameInput.value) {
         return Swal.fire('Perhatian', 'Nama pelanggan wajib diisi!', 'warning');
     }
-    if (cart.length === 0) {
+    if (!cart || cart.length === 0) {
         return Swal.fire('Gagal', 'Keranjang masih kosong!', 'error');
     }
 
-    const nominalBayar = parseInt(cashInput.value.replace(/\./g, '')) || 0;
+    // Pastikan currentTotal ada nilainya
+    const totalTransaksi = typeof currentTotal !== 'undefined' ? currentTotal : 0;
 
-    if (paymentType === 'TUNAI' && nominalBayar < currentTotal) {
+    // Ambil nominal bayar, hapus titik, pastikan jadi angka
+    const rawCash = cashInput ? cashInput.value.replace(/\./g, '') : "0";
+    const nominalBayar = parseInt(rawCash) || 0;
+
+    if (paymentType === 'TUNAI' && nominalBayar < totalTransaksi) {
         return Swal.fire('Uang Kurang', 'Jumlah bayar tidak mencukupi!', 'error');
     }
     if (paymentType === 'ONLINE' && !onlineMethod) {
@@ -1596,55 +1601,61 @@ window.submitAndPrint = async () => {
             type: 'PENJUALAN',
             name: nameInput.value,
             items: cart,
-            total: currentTotal,
-            service: serviceType,
-            method: paymentType,
+            total: totalTransaksi,
+            service: typeof serviceType !== 'undefined' ? serviceType : 'Dine In',
+            method: typeof paymentType !== 'undefined' ? paymentType : 'TUNAI',
             bank: (paymentType === 'ONLINE' ? onlineMethod : '-'),
             petugas: document.getElementById('user-display')?.innerText || 'Admin',
             time: new Date().toISOString(),
             category: 'Penjualan Kasir'
         });
 
-        // 2. PROSES CETAK RAWBT (Khusus Thermal HP)
+        // 2. PROSES CETAK STRUK (RAWBT & THERMAL SAFE)
         const namaPetugas = document.getElementById('user-display')?.innerText || 'Admin';
         
-        // Membuat format teks struk (Rata kiri-kanan)
         let strukText = "      LESEHAN MACCA\n";
         strukText += "--------------------------------\n";
         strukText += `Tgl: ${new Date().toLocaleString('id-ID')}\n`;
         strukText += `Kasir: ${namaPetugas}\n`;
-        strukText += `Pelanggan: ${nameInput.value}\n`;
+        strukText += `Plgn: ${nameInput.value}\n`;
         strukText += "--------------------------------\n";
 
         cart.forEach(item => {
-            strukText += `${item.nama}\n`;
-            // Format: Qty x Harga     Subtotal
-            const qtyHarga = `${item.qty} x ${item.harga.toLocaleString()}`;
-            const subtotal = (item.qty * item.harga).toLocaleString();
-            const spasi = 32 - qtyHarga.length - subtotal.length;
-            strukText += qtyHarga + " ".repeat(Math.max(0, spasi)) + subtotal + "\n";
+            const namaItem = item.nama || 'Item';
+            const qty = item.qty || 0;
+            const harga = item.harga || 0;
+            const subtotal = qty * harga;
+
+            strukText += `${namaItem}\n`;
+            const barisHarga = `${qty} x ${harga.toLocaleString('id-ID')}`;
+            const barisSubtotal = subtotal.toLocaleString('id-ID');
+            const spasi = 32 - barisHarga.length - barisSubtotal.length;
+            strukText += barisHarga + " ".repeat(Math.max(0, spasi)) + barisSubtotal + "\n";
         });
 
         strukText += "--------------------------------\n";
-        const totalStr = currentTotal.toLocaleString();
+        const totalStr = totalTransaksi.toLocaleString('id-ID');
         const spasiTotal = 32 - "TOTAL:".length - totalStr.length;
         strukText += "TOTAL:" + " ".repeat(Math.max(0, spasiTotal)) + totalStr + "\n";
         
         if(paymentType === 'TUNAI') {
-            const kembalian = (nominalBayar - currentTotal).toLocaleString();
-            const spasiKembali = 32 - "KEMBALI:".length - kembalian.length;
-            strukText += "BAYAR:" + " ".repeat(32 - "BAYAR:".length - nominalBayar.toLocaleString().length) + nominalBayar.toLocaleString() + "\n";
-            strukText += "KEMBALI:" + " ".repeat(Math.max(0, spasiKembali)) + kembalian + "\n";
+            const kembalian = (nominalBayar - totalTransaksi).toLocaleString('id-ID');
+            const bayarStr = nominalBayar.toLocaleString('id-ID');
+            
+            strukText += "BAYAR:" + " ".repeat(32 - "BAYAR:".length - bayarStr.length) + bayarStr + "\n";
+            strukText += "KEMBALI:" + " ".repeat(32 - "KEMBALI:".length - kembalian.length) + kembalian + "\n";
         }
         
         strukText += "--------------------------------\n";
         strukText += "    TERIMA KASIH ATAS\n";
-        strukText += "      KUNJUNGAN ANDA\n\n\n\n"; // 4 Enter agar kertas bisa disobek
+        strukText += "      KUNJUNGAN ANDA\n\n\n\n";
 
-        // Kirim ke RawBT jika Android, jika bukan (PC) pakai window.print
+        // Eksekusi Cetak
         if (/Android/i.test(navigator.userAgent)) {
-            window.location.href = "rawbt:base64," + btoa(strukText);
+            // Gunakan RawBT untuk HP Android
+            window.location.href = "rawbt:base64," + btoa(unescape(encodeURIComponent(strukText)));
         } else {
+            // Gunakan Print Browser Biasa untuk Laptop
             window.print();
         }
 
@@ -1654,15 +1665,15 @@ window.submitAndPrint = async () => {
         if (modalInstance) modalInstance.hide();
 
         nameInput.value = '';
-        cashInput.value = '';
+        if(cashInput) cashInput.value = '';
         if (typeof batalSemua === 'function') batalSemua();
         
-        Swal.fire('Sukses', 'Transaksi Berhasil Disimpan', 'success');
+        Swal.fire('Sukses', 'Transaksi Berhasil', 'success');
         if (typeof loadLaporan === 'function') loadLaporan();
 
     } catch (error) {
-        console.error("Firebase Error:", error);
-        Swal.fire('Error', 'Gagal menyimpan: ' + error.message, 'error');
+        console.error("Detail Error:", error);
+        Swal.fire('Error', 'Terjadi kesalahan sistem', 'error');
     }
 };
 // ────────────────────────────────────────────────
