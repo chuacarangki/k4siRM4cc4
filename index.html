@@ -1604,7 +1604,7 @@ window.submitAndPrint = async () => {
             category: 'Penjualan Kasir'
         });
 
-        // 2. PROSES CETAK STRUK
+      // 2. PROSES CETAK STRUK
 const namaPetugas = document.getElementById('user-display')?.innerText || 'Admin';
 
 let strukText = "      LESEHAN MACCA\n";
@@ -1614,18 +1614,18 @@ strukText += `Kasir: ${namaPetugas}\n`;
 strukText += `Plgn: ${nameInput.value}\n`;
 strukText += "--------------------------------\n";
 
+// HANYA PAKAI SATU FOR EACH
 cart.forEach(item => {
-    // PERBAIKAN DI SINI:
-    // Kita cek apakah propertinya bernama 'nama' atau 'name' agar tidak kosong
-    const namaMenu = item.nama || item.name || "Menu"; 
-    const qty = item.qty || 0;
-    const harga = item.harga || item.price || 0;
+    // Membaca properti 'n' sesuai database Firebase Anda
+    const namaMenu = item.n || item.nama || item.name || "Menu"; 
+    const qty = item.qty || 1;
+    const harga = item.harga || item.price || 0; 
     const subtotal = qty * harga;
 
-    // Cetak Nama Menu
+    // Nama Menu (Huruf Besar)
     strukText += `${namaMenu.toUpperCase()}\n`;
     
-    // Cetak Qty x Harga di baris bawahnya dengan rata kanan-kiri
+    // Baris Qty x Harga dan Subtotal
     const barisHarga = `${qty} x ${harga.toLocaleString('id-ID')}`;
     const barisSubtotal = subtotal.toLocaleString('id-ID');
     const spasi = 32 - barisHarga.length - barisSubtotal.length;
@@ -1633,46 +1633,35 @@ cart.forEach(item => {
     strukText += barisHarga + " ".repeat(Math.max(0, spasi)) + barisSubtotal + "\n";
 });
 
+// TOTAL DAN PEMBAYARAN
 strukText += "--------------------------------\n";
+const totalStr = totalTransaksi.toLocaleString('id-ID');
+const spasiTotal = 32 - "TOTAL:".length - totalStr.length;
+strukText += "TOTAL:" + " ".repeat(Math.max(0, spasiTotal)) + totalStr + "\n";
 
-        cart.forEach(item => {
-            const namaItem = item.nama || 'Item';
-            const qty = item.qty || 0;
-            const harga = item.harga || 0;
-            const subtotal = qty * harga;
+if(paymentType === 'TUNAI') {
+    const bayarStr = nominalBayar.toLocaleString('id-ID');
+    const kembalian = (nominalBayar - totalTransaksi).toLocaleString('id-ID');
+    
+    const spasiBayar = 32 - "BAYAR:".length - bayarStr.length;
+    const spasiKembali = 32 - "KEMBALI:".length - kembalian.length;
+    
+    strukText += "BAYAR:" + " ".repeat(Math.max(0, spasiBayar)) + bayarStr + "\n";
+    strukText += "KEMBALI:" + " ".repeat(Math.max(0, spasiKembali)) + kembalian + "\n";
+}
 
-            strukText += `${namaItem}\n`;
-            const barisHarga = `${qty} x ${harga.toLocaleString('id-ID')}`;
-            const barisSubtotal = subtotal.toLocaleString('id-ID');
-            const spasi = 32 - barisHarga.length - barisSubtotal.length;
-            strukText += barisHarga + " ".repeat(Math.max(0, spasi)) + barisSubtotal + "\n";
-        });
+strukText += "--------------------------------\n";
+strukText += "    TERIMA KASIH ATAS\n";
+strukText += "      KUNJUNGAN ANDA\n\n\n\n";
 
-        strukText += "--------------------------------\n";
-        const totalStr = totalTransaksi.toLocaleString('id-ID');
-        const spasiTotal = 32 - "TOTAL:".length - totalStr.length;
-        strukText += "TOTAL:" + " ".repeat(Math.max(0, spasiTotal)) + totalStr + "\n";
-        
-        if(paymentType === 'TUNAI') {
-            const kembalian = (nominalBayar - totalTransaksi).toLocaleString('id-ID');
-            const bayarStr = nominalBayar.toLocaleString('id-ID');
-            
-            strukText += "BAYAR:" + " ".repeat(32 - "BAYAR:".length - bayarStr.length) + bayarStr + "\n";
-            strukText += "KEMBALI:" + " ".repeat(32 - "KEMBALI:".length - kembalian.length) + kembalian + "\n";
-        }
-        
-        strukText += "--------------------------------\n";
-        strukText += "    TERIMA KASIH ATAS\n";
-        strukText += "      KUNJUNGAN ANDA\n\n\n\n";
-
-        // Eksekusi Cetak
-        if (/Android/i.test(navigator.userAgent)) {
-            // Gunakan RawBT untuk HP Android
-            window.location.href = "rawbt:base64," + btoa(unescape(encodeURIComponent(strukText)));
-        } else {
-            // Gunakan Print Browser Biasa untuk Laptop
-            window.print();
-        }
+// Eksekusi Cetak
+if (/Android/i.test(navigator.userAgent)) {
+    // Gunakan RawBT untuk HP Android
+    window.location.href = "rawbt:base64," + btoa(unescape(encodeURIComponent(strukText)));
+} else {
+    // Gunakan Print Browser Biasa untuk Laptop
+    window.print();
+}
 
         // 3. Reset UI
         const modalEl = document.getElementById('checkoutModal');
