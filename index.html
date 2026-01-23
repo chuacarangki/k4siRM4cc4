@@ -1483,79 +1483,73 @@ window.cetakStrukOnline = async (orderId) => {
         
         const order = snap.val();
         
-        // Hitung subtotal (kalau ongkir ada di data order)
+        // Hitung subtotal & total
         const subtotal = order.items.reduce((sum, item) => sum + (parseInt(item.price) * parseInt(item.qty)), 0);
-        const ongkir = parseInt(order.ongkir || 5000);
+        const ongkir = parseInt(order.ongkir || 0);
         const total = subtotal + ongkir;
+
+        // --- FORMAT TEKS UNTUK RAWBT (PRINTER THERMAL) ---
+        let strukText = "      LESEHAN MACCA\n";
+        strukText += "     PESANAN  ONLINE\n";
+        strukText += "--------------------------------\n";
+        strukText += `No: #${orderId.slice(-6).toUpperCase()}\n`;
+        strukText += `Tgl: ${order.waktu || new Date().toLocaleString('id-ID')}\n`;
+        strukText += `Plgn: ${order.pelanggan || 'Customer'}\n`;
+        if (order.telepon) strukText += `Telp: ${order.telepon}\n`;
+        strukText += "--------------------------------\n";
+
+        order.items.forEach(item => {
+            // Nama produk (Baris 1)
+            strukText += `${item.name}\n`;
+            // Qty x Harga (Baris 2, rata kanan-kiri)
+            const qtyHarga = `${item.qty} x ${parseInt(item.price).toLocaleString('id-ID')}`;
+            const sub = (parseInt(item.price) * parseInt(item.qty)).toLocaleString('id-ID');
+            const spasi = 32 - qtyHarga.length - sub.length;
+            strukText += qtyHarga + " ".repeat(Math.max(0, spasi)) + sub + "\n";
+        });
+
+        strukText += "--------------------------------\n";
         
-        // Format struk sederhana (bisa kamu ubah sesuka hati)
-        const strukContent = `
-            <div style="font-family: 'Courier New', monospace; width: 300px; margin: 0 auto; font-size: 12px; text-align: center;">
-                <h5 style="margin: 0;">LESEHAN MACCA</h5>
-                <small>Pesanan Online #${orderId.slice(0,8)}</small>
-                <hr style="border-top: 1px dashed #000; margin: 8px 0;">
-                
-                <div style="text-align: left;">
-                    <b>Waktu:</b> ${order.waktu}<br>
-                    <b>Pelanggan:</b> ${order.pelanggan || 'Online Customer'}<br>
-                    <b>Telepon:</b> ${order.telepon || '-' }<br>
-                    <b>Alamat:</b> ${order.alamat || 'Tidak ada alamat'}<br>
-                </div>
-                
-                <hr style="border-top: 1px dashed #000; margin: 8px 0;">
-                
-                <div style="text-align: left;">
-                    ${order.items.map(item => `
-                        <div style="display: flex; justify-content: space-between;">
-                            <span>${item.qty}x ${item.name}</span>
-                            <span>Rp ${(parseInt(item.price) * parseInt(item.qty)).toLocaleString()}</span>
-                        </div>
-                    `).join('')}
-                </div>
-                
-                <hr style="border-top: 1px dashed #000; margin: 8px 0;">
-                
-                <div style="display: flex; justify-content: space-between; font-weight: bold;">
-                    <span>Subtotal</span><span>Rp ${subtotal.toLocaleString()}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <span>Ongkir</span><span>Rp ${ongkir.toLocaleString()}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 8px;">
-                    <span>TOTAL</span><span>Rp ${total.toLocaleString()}</span>
-                </div>
-                
-                <hr style="border-top: 1px dashed #000; margin: 12px 0;">
-                <small>Metode: ${order.metode_bayar || 'COD / Transfer'}</small><br>
-                <small>Terima kasih atas pesanannya!</small><br>
-                <small>${new Date().toLocaleString('id-ID')}</small>
-            </div>
-        `;
+        // Subtotal
+        const subStr = subtotal.toLocaleString('id-ID');
+        strukText += "SUBTOTAL:" + " ".repeat(32 - 9 - subStr.length) + subStr + "\n";
         
-        // Buka print dialog dengan konten struk
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(`
-            <html>
-            <head><title>Cetak Struk Online</title></head>
-            <body onload="window.print(); window.close();">
-                ${strukContent}
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
+        // Ongkir
+        const ongStr = ongkir.toLocaleString('id-ID');
+        strukText += "ONGKIR:" + " ".repeat(32 - 7 - ongStr.length) + ongStr + "\n";
         
-        // Optional: update status setelah cetak
-       await update(ref(db, `pesanan_masuk/${orderId}`), { 
-    printed: true,
-    printed_at: new Date().toISOString()
-    // JANGAN ubah status di sini lagi, biar kasir yang kontrol manual lewat tombol "Siap Diantar"
-});
+        // Total
+        const totStr = total.toLocaleString('id-ID');
+        strukText += "TOTAL:" + " ".repeat(32 - 6 - totStr.length) + totStr + "\n";
+
+        strukText += "--------------------------------\n";
+        strukText += `Metode: ${order.metode_bayar || 'ONLINE'}\n`;
+        strukText += "      TERIMA KASIH\n\n\n\n"; // 4 Spasi enter agar bisa sobek kertas
+
+        // --- EKSEKUSI CETAK ---
+        if (/Android/i.test(navigator.userAgent)) {
+            // KIRIM KE RAWBT (HP ANDROID)
+            window.location.href = "rawbt:base64," + btoa(unescape(encodeURIComponent(strukText)));
+        } else {
+            // FALLBACK UNTUK LAPTOP (Tampilan Sederhana)
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`<pre style="font-family:monospace;width:58mm;font-size:12px;">${strukText}</pre>`);
+            printWindow.document.close();
+            printWindow.print();
+            printWindow.close();
+        }
+
+        // Update status di Firebase
+        await update(ref(db, `pesanan_masuk/${orderId}`), { 
+            printed: true,
+            printed_at: new Date().toISOString()
+        });
         
         Swal.fire({
             icon: 'success',
-            title: 'Struk Online Tercetak',
-            text: 'Silakan tempel atau berikan ke driver/kurir',
-            timer: 2000
+            title: 'Struk Terkirim ke Printer',
+            timer: 1500,
+            showConfirmButton: false
         });
         
     } catch (err) {
