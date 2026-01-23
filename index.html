@@ -1604,7 +1604,7 @@ window.submitAndPrint = async () => {
             category: 'Penjualan Kasir'
         });
 
-      // 2. PROSES CETAK STRUK
+    // 2. PROSES CETAK STRUK (VERSI FINAL STRUKTUR N & P)
 const namaPetugas = document.getElementById('user-display')?.innerText || 'Admin';
 
 let strukText = "      LESEHAN MACCA\n";
@@ -1614,27 +1614,27 @@ strukText += `Kasir: ${namaPetugas}\n`;
 strukText += `Plgn: ${nameInput.value}\n`;
 strukText += "--------------------------------\n";
 
-// HANYA PAKAI SATU FOR EACH
 cart.forEach(item => {
-    // Membaca properti 'n' sesuai database Firebase Anda
+    // Penyesuaian Key Database: n = Nama, p = Harga
     const namaMenu = item.n || item.nama || item.name || "Menu"; 
     const qty = item.qty || 1;
-    const harga = item.harga || item.price || 0; 
+    const harga = item.p || item.harga || item.price || 0; 
     const subtotal = qty * harga;
 
-    // Nama Menu (Huruf Besar)
+    // Cetak Nama Menu
     strukText += `${namaMenu.toUpperCase()}\n`;
     
-    // Baris Qty x Harga dan Subtotal
-    const barisHarga = `${qty} x ${harga.toLocaleString('id-ID')}`;
-    const barisSubtotal = subtotal.toLocaleString('id-ID');
+    // Baris rincian: Qty x Harga     Subtotal
+    const barisHarga = `${qty} x ${parseInt(harga).toLocaleString('id-ID')}`;
+    const barisSubtotal = parseInt(subtotal).toLocaleString('id-ID');
     const spasi = 32 - barisHarga.length - barisSubtotal.length;
     
     strukText += barisHarga + " ".repeat(Math.max(0, spasi)) + barisSubtotal + "\n";
 });
 
-// TOTAL DAN PEMBAYARAN
 strukText += "--------------------------------\n";
+
+// TOTAL AKHIR
 const totalStr = totalTransaksi.toLocaleString('id-ID');
 const spasiTotal = 32 - "TOTAL:".length - totalStr.length;
 strukText += "TOTAL:" + " ".repeat(Math.max(0, spasiTotal)) + totalStr + "\n";
@@ -1654,12 +1654,10 @@ strukText += "--------------------------------\n";
 strukText += "    TERIMA KASIH ATAS\n";
 strukText += "      KUNJUNGAN ANDA\n\n\n\n";
 
-// Eksekusi Cetak
+// Eksekusi Cetak ke RawBT atau Browser
 if (/Android/i.test(navigator.userAgent)) {
-    // Gunakan RawBT untuk HP Android
     window.location.href = "rawbt:base64," + btoa(unescape(encodeURIComponent(strukText)));
 } else {
-    // Gunakan Print Browser Biasa untuk Laptop
     window.print();
 }
 
