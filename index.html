@@ -120,11 +120,42 @@
 
         #login-screen { height: 100vh; background: var(--blue-gradient); display: flex; align-items: center; justify-content: center; position: fixed; width: 100%; z-index: 9999; }
         
-        @media print {
-            .sidebar, .mobile-toggle, .btn-danger, .trx-box, .no-print, #backToTop { display: none !important; }
-            .main-content { margin: 0 !important; padding: 0 !important; }
-            .table-responsive { overflow: visible !important; }
-        }
+       /* --- PERBAIKAN UNTUK PRINTER THERMAL --- */
+@media print {
+    /* Sembunyikan semua elemen UI */
+    .sidebar, .mobile-toggle, .btn-danger, .trx-box, .no-print, #backToTop, 
+    .modal-footer, .cart-bar-bottom, #login-screen { 
+        display: none !important; 
+    }
+
+    /* Reset body agar fokus ke struk saja */
+    body { 
+        background: white !important; 
+        margin: 0 !important; 
+        padding: 0 !important; 
+        width: 58mm; /* Standar lebar kertas thermal */
+    }
+
+    .main-content { 
+        margin: 0 !important; 
+        padding: 0 !important; 
+        width: 58mm !important;
+    }
+
+    /* Khusus untuk tampilan struk RawBT agar tidak keluar terus menerus */
+    .receipt-popup {
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 10pt !important;
+    }
+    
+    /* Mencegah page break (kertas keluar terus) */
+    html, body {
+        height: auto !important;
+        overflow: visible !important;
+    }
+}
 
         .badge-method { font-size: 0.75rem; padding: 4px 10px; border-radius: 8px; font-weight: 700; text-transform: uppercase; }
         .badge-dinein { background: #004aad; color: white; }
@@ -774,6 +805,28 @@
     </div>
 </div>
 
+    </div>
+</div>
+
+<!-- Popup Tipe Layanan saat masuk Tab Kasir -->
+<div class="modal fade" id="serviceTypeModal" tabindex="-1" aria-labelledby="serviceTypeLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-content border-0 rounded-5 shadow-lg">
+            <div class="modal-header border-0 bg-primary text-white p-4">
+                <h5 class="fw-bold mb-0" id="serviceTypeLabel"><i class="fas fa-truck-fast me-2"></i>PILIH TIPE LAYANAN</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <div class="d-flex flex-wrap gap-3 justify-content-center">
+                    <button class="btn-service shadow-sm" onclick="selectService('Dine In')"><i class="fas fa-chair fs-3 mb-2"></i><br>DINE IN</button>
+                    <button class="btn-service shadow-sm" onclick="selectService('Take Away')"><i class="fas fa-bag-shopping fs-3 mb-2"></i><br>TAKE AWAY</button>
+                    <button class="btn-service shadow-sm" onclick="selectService('Antar')"><i class="fas fa-motorcycle fs-3 mb-2"></i><br>DELIVERY</button>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-secondary rounded-pill px-4 fw-bold" data-bs-dismiss="modal">BATAL</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -1512,11 +1565,9 @@ window.cetakStrukOnline = async (orderId) => {
 };
 
 window.submitAndPrint = async () => {
-    // Ambil input nama dengan ID 'customer-name' (sesuai file backup kamu)
     const nameInput = document.getElementById('customer-name');
     const cashInput = document.getElementById('cash-amount');
 
-    // Validasi Dasar
     if (!nameInput || !nameInput.value) {
         return Swal.fire('Perhatian', 'Nama pelanggan wajib diisi!', 'warning');
     }
@@ -1524,16 +1575,14 @@ window.submitAndPrint = async () => {
         return Swal.fire('Gagal', 'Keranjang masih kosong!', 'error');
     }
 
-    // Konversi nominal bayar (hapus titik format rupiah)
     const nominalBayar = parseInt(cashInput.value.replace(/\./g, '')) || 0;
 
-    // Validasi Pembayaran
     if (paymentType === 'TUNAI' && nominalBayar < currentTotal) {
         return Swal.fire('Uang Kurang', 'Jumlah bayar tidak mencukupi!', 'error');
     }
     if (paymentType === 'ONLINE' && !onlineMethod) {
-    return Swal.fire('Perhatian', 'Pilih bank untuk pembayaran ONLINE (BNI/QRIS atau BRI/Transfer)', 'warning');
-}
+        return Swal.fire('Perhatian', 'Pilih bank untuk pembayaran ONLINE', 'warning');
+    }
 
     Swal.fire({
         title: 'Menyimpan Transaksi...',
@@ -1542,8 +1591,7 @@ window.submitAndPrint = async () => {
     });
 
     try {
-        // Simpan ke Firebase
-        // Pastikan variabel 'db', 'push', dan 'ref' sudah terimport di atas
+        // 1. Simpan ke Firebase
         await push(ref(db, 'transaksi'), {
             type: 'PENJUALAN',
             name: nameInput.value,
@@ -1557,30 +1605,66 @@ window.submitAndPrint = async () => {
             category: 'Penjualan Kasir'
         });
 
-        // Cetak Struk
-        window.print();
+        // 2. PROSES CETAK RAWBT (Khusus Thermal HP)
+        const namaPetugas = document.getElementById('user-display')?.innerText || 'Admin';
+        
+        // Membuat format teks struk (Rata kiri-kanan)
+        let strukText = "      LESEHAN MACCA\n";
+        strukText += "--------------------------------\n";
+        strukText += `Tgl: ${new Date().toLocaleString('id-ID')}\n`;
+        strukText += `Kasir: ${namaPetugas}\n`;
+        strukText += `Pelanggan: ${nameInput.value}\n`;
+        strukText += "--------------------------------\n";
 
-               // Tutup Modal
+        cart.forEach(item => {
+            strukText += `${item.nama}\n`;
+            // Format: Qty x Harga     Subtotal
+            const qtyHarga = `${item.qty} x ${item.harga.toLocaleString()}`;
+            const subtotal = (item.qty * item.harga).toLocaleString();
+            const spasi = 32 - qtyHarga.length - subtotal.length;
+            strukText += qtyHarga + " ".repeat(Math.max(0, spasi)) + subtotal + "\n";
+        });
+
+        strukText += "--------------------------------\n";
+        const totalStr = currentTotal.toLocaleString();
+        const spasiTotal = 32 - "TOTAL:".length - totalStr.length;
+        strukText += "TOTAL:" + " ".repeat(Math.max(0, spasiTotal)) + totalStr + "\n";
+        
+        if(paymentType === 'TUNAI') {
+            const kembalian = (nominalBayar - currentTotal).toLocaleString();
+            const spasiKembali = 32 - "KEMBALI:".length - kembalian.length;
+            strukText += "BAYAR:" + " ".repeat(32 - "BAYAR:".length - nominalBayar.toLocaleString().length) + nominalBayar.toLocaleString() + "\n";
+            strukText += "KEMBALI:" + " ".repeat(Math.max(0, spasiKembali)) + kembalian + "\n";
+        }
+        
+        strukText += "--------------------------------\n";
+        strukText += "    TERIMA KASIH ATAS\n";
+        strukText += "      KUNJUNGAN ANDA\n\n\n\n"; // 4 Enter agar kertas bisa disobek
+
+        // Kirim ke RawBT jika Android, jika bukan (PC) pakai window.print
+        if (/Android/i.test(navigator.userAgent)) {
+            window.location.href = "rawbt:base64," + btoa(strukText);
+        } else {
+            window.print();
+        }
+
+        // 3. Reset UI
         const modalEl = document.getElementById('checkoutModal');
         const modalInstance = bootstrap.Modal.getInstance(modalEl);
         if (modalInstance) modalInstance.hide();
 
-        // Reset
         nameInput.value = '';
         cashInput.value = '';
         if (typeof batalSemua === 'function') batalSemua();
         
-        Swal.fire('Sukses', 'Transaksi Berhasil Disimpan & Struk Tercetak', 'success');
-        
-        // Refresh laporan & dashboard setelah transaksi berhasil
+        Swal.fire('Sukses', 'Transaksi Berhasil Disimpan', 'success');
         if (typeof loadLaporan === 'function') loadLaporan();
 
     } catch (error) {
-        console.error("Firebase Error saat submitAndPrint:", error);
-        Swal.fire('Error', 'Gagal menyimpan transaksi: ' + error.message, 'error');
+        console.error("Firebase Error:", error);
+        Swal.fire('Error', 'Gagal menyimpan: ' + error.message, 'error');
     }
 };
-
 // ────────────────────────────────────────────────
 // Inisialisasi saat halaman selesai dimuat
 // ────────────────────────────────────────────────
@@ -1619,6 +1703,19 @@ window.loadLaporan = loadLaporan;
 
 // Jalankan sekali lagi listener utama (aman dilakukan)
 listenOnlineOrders();
+
+// Fungsi untuk mengirim perintah ke aplikasi RawBT
+function printToRawBT(text) {
+    const S = "#" + text; // Menandakan awal dokumen untuk RawBT
+    const url = "rawbt:base64," + btoa(text);
+    window.location.href = url;
+}
+
+// Fungsi pembantu untuk membuat teks struk rata kiri-kanan (alignment)
+function formatLine(left, right, width = 32) {
+    const space = width - left.length - right.length;
+    return left + " ".repeat(Math.max(0, space)) + right;
+}
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
