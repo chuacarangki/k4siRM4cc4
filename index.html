@@ -1325,11 +1325,11 @@ function listenOnlineOrders() {
             ordersArray.forEach(order => {
                 const itemsText = order.items?.map(i => `${i.name} (x${i.qty})`).join('<br>') || '-';
 
-              const mapsLink = (order.lat && order.lng)
-    ? `<a href="https://www.google.com/maps/search/?api=1&query=$$   {order.lat},   $${order.lng}" 
-         class="btn btn-sm btn-maps">
+       const mapsLink = (order.lat && order.lng)
+    ? `<a href="https://www.google.com/maps/search/?api=1&query=${order.lat}%2C${order.lng}&query_place_id=placeholder" 
+         target="_blank" class="btn btn-sm btn-maps">
         <i class="fas fa-directions me-1"></i> Rute
-       </a>`
+      </a>`
     : `<span class="text-muted small">Tanpa GPS</span>`;
 
                 // LOGIKA TOMBOL AKSI DISESUAIKAN DENGAN ALUR BARU
