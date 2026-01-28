@@ -414,6 +414,7 @@
                             <th class="text-primary fw-bold" style="font-size:0.95rem;">PESANAN</th>
                             <th class="text-primary fw-bold" style="font-size:0.95rem;">TOTAL</th>
                             <th class="text-primary fw-bold" style="font-size:0.95rem;">METODE BAYAR</th>
+                            <th class="text-primary fw-bold" style="font-size:0.95rem;">BUKTI BAYAR</th>
                             <th class="text-primary fw-bold" style="font-size:0.95rem;">STATUS</th>
                             <th class="text-primary fw-bold" style="font-size:0.95rem;">LOKASI GPS</th>
                             <th class="text-primary fw-bold" style="font-size:0.95rem;">AKSI</th>
@@ -1073,6 +1074,26 @@
         });
     };
 
+    window.previewBukti = function(url) {
+    if (!url) {
+        Swal.fire('Info', 'Tidak ada bukti pembayaran', 'info');
+        return;
+    }
+
+    Swal.fire({
+        title: 'Bukti Pembayaran',
+        html: `<img src="${url}" class="img-fluid rounded-3 mt-3" style="max-height:85vh; max-width:100%; object-fit:contain; cursor:zoom-in;" onclick="this.style.transform = (this.style.transform === 'scale(2)') ? 'scale(1)' : 'scale(2)';">` +
+              `<p class="small text-muted mt-3">Klik gambar untuk zoom in/out</p>`,
+        showConfirmButton: true,
+        confirmButtonText: 'Tutup',
+        confirmButtonColor: '#059669',
+        width: '95%',
+        padding: '1rem',
+        backdrop: 'rgba(0,0,0,0.9)',
+        allowOutsideClick: true
+    });
+};
+
     window.loadLaporan = () => {
         const fDate = document.getElementById('filter-date-riwayat').value;
         const todayStr = new Date().toISOString().split('T')[0];
@@ -1227,48 +1248,12 @@
         else { if(idEdit) { const oldMenu = masterMenu.find(m => m.id === idEdit); proc(oldMenu.image); } else { proc(); } }
     };
 
-  window.toggleStok = (id, cur) => {
-    const newStatus = cur === 'Habis' ? 'Ready' : 'Habis';
-
-    // Update status di master_menu (kasir offline)
-    update(ref(db, `master_menu/${id}`), { status: newStatus })
-        .then(() => {
-            // Sinkron otomatis ke master_menu_online (app toko online)
-            update(ref(db, `master_menu_online/${id}`), { status: newStatus })
-                .catch(err => {
-                    console.error("Gagal sync status ke online:", err);
-                    // Opsional: beri tahu kalau sync gagal, tapi kasir tetap sukses
-                    Swal.fire('Peringatan', 'Status kasir berhasil diubah, tapi gagal sync ke online', 'warning');
-                });
-
-            Swal.fire('Sukses', `Menu diubah menjadi ${newStatus} (kasir & online)`, 'success');
-            // Refresh list admin kalau ada fungsi renderAdminList atau loadMenus
-            if (typeof renderAdminList === 'function') renderAdminList();
-        })
-        .catch(err => {
-            Swal.fire('Gagal', 'Update status gagal: ' + err.message, 'error');
+    window.toggleStok = (id, cur) => { update(ref(db, `master_menu/${id}`), { status: cur === 'Habis' ? 'Ready' : 'Habis' }); };
+    window.hapusMenu = (id) => { 
+        Swal.fire({ title: 'Hapus Menu?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, Hapus!' }).then((result) => {
+            if (result.isConfirmed) { remove(ref(db, `master_menu/${id}`)); Toast.fire({ icon: 'success', title: 'Terhapus' }); }
         });
-};
-
-window.hapusMenu = (id) => { 
-    Swal.fire({ 
-        title: 'Hapus Menu?', 
-        icon: 'warning', 
-        showCancelButton: true, 
-        confirmButtonText: 'Ya, Hapus!' 
-    }).then((result) => {
-        if (result.isConfirmed) { 
-            // Hapus dari master_menu (kasir offline)
-            remove(ref(db, `master_menu/${id}`));
-            
-            // Hapus juga dari master_menu_online (app online)
-            remove(ref(db, `master_menu_online/${id}`))
-                .catch(err => console.error("Gagal hapus dari online:", err));
-            
-            Toast.fire({ icon: 'success', title: 'Terhapus' }); 
-        }
-    });
-};
+    };
 
     // ────────────────────────────────────────────────
     // Fungsi helper dari admin
@@ -1298,6 +1283,8 @@ window.hapusMenu = (id) => {
     // ────────────────────────────────────────────────
     // Fungsi utama pesanan online (integrasi admin + kasir)
     // ────────────────────────────────────────────────
+
+
 function listenOnlineOrders() {
         const orderRef = ref(db, 'pesanan_masuk');
         onValue(orderRef, (snapshot) => {
@@ -1338,11 +1325,12 @@ function listenOnlineOrders() {
             ordersArray.forEach(order => {
                 const itemsText = order.items?.map(i => `${i.name} (x${i.qty})`).join('<br>') || '-';
 
-                const mapsLink = (order.lat && order.lng)
-                    ? `<a href="http://maps.google.com/maps?q=${order.lat},${order.lng}" target="_blank" class="btn btn-sm btn-maps">
-                        <i class="fas fa-directions me-1"></i> Rute
-                       </a>`
-                    : `<span class="text-muted small">Tanpa GPS</span>`;
+              const mapsLink = (order.lat && order.lng)
+    ? `<a href="https://www.google.com/maps/search/?api=1&query=$$   {order.lat},   $${order.lng}" 
+         class="btn btn-sm btn-maps">
+        <i class="fas fa-directions me-1"></i> Rute
+       </a>`
+    : `<span class="text-muted small">Tanpa GPS</span>`;
 
                 // LOGIKA TOMBOL AKSI DISESUAIKAN DENGAN ALUR BARU
                let actionHtml = '';
@@ -1376,33 +1364,66 @@ if (order.status === 'Pending') {
 }
 
                 // --- Penambahan Badge Metode Bayar (baru di sini) ---
-                let metodeBayarBadge = '';
-                if (order.metode_bayar === 'COD') {
-                    metodeBayarBadge = '<span class="badge bg-success">COD</span>';
-                } else if (order.metode_bayar === 'Bank') {
-                    metodeBayarBadge = '<span class="badge bg-primary">TRANSFER</span>';
-                } else if (order.metode_bayar === 'QRIS') {
-                    metodeBayarBadge = '<span class="badge bg-info">QRIS</span>';
-                } else {
-                    metodeBayarBadge = '<span class="badge bg-secondary">Tidak Diketahui</span>'; // Fallback jika data hilang
-                }
+              let metodeBayarBadge = '<span class="badge bg-secondary">Tidak Diketahui</span>';
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="small">${order.waktu}</td>
-                    <td>
-                        <div class="fw-bold">${order.pelanggan}</div>
-                        <div class="small text-muted">${order.telepon || '-'}</div>
-                        <div class="small text-primary">${order.alamat || ''}</div>
-                    </td>
-                    <td class="small">${itemsText}</td>
-                    <td class="fw-bold text-primary">Rp ${Number(order.total_bayar || 0).toLocaleString()}</td>
-                    <td>${metodeBayarBadge}</td>
-                    <td><span class="badge ${getStatusBadge(order.status)}">${order.status}</span></td>
-                    <td>${mapsLink}</td>
-                    <td>${actionHtml}</td>
-                `;
-                tbody.appendChild(tr);
+const metode = (order.metode_bayar || '').toLowerCase().trim();
+
+if (metode.includes('cod') || metode === 'tunai') {
+    metodeBayarBadge = '<span class="badge bg-success">COD</span>';
+} 
+else if (metode.includes('transfer') || metode === 'bank') {
+    metodeBayarBadge = '<span class="badge bg-primary">TRANSFER</span>';
+} 
+else if (metode === 'qris' || metode.includes('qris')) {
+    metodeBayarBadge = '<span class="badge bg-info">QRIS</span>';
+}
+
+              // Tambahkan ini sebelum const tr = ...
+const buktiCell = order.bukti_pembayaran 
+    ? `
+        <td>
+            <img src="${order.bukti_pembayaran}" 
+                 alt="Bukti" 
+                 style="max-width: 80px; max-height: 80px; border-radius: 8px; cursor: pointer; object-fit: cover; border: 1px solid #ddd;"
+                 onclick="window.previewBukti('${order.bukti_pembayaran.replace(/'/g, "\\'").replace(/"/g, '\\"')}')">
+            <br><small class="text-muted">Klik untuk zoom</small>
+        </td>
+    `
+    : `<td><span class="text-muted small">—</span></td>`;
+
+const tr = document.createElement('tr');
+tr.innerHTML = `
+    <td class="small">${order.waktu}</td>
+  <td>
+    <div class="fw-bold">${order.pelanggan}</div>
+    ${order.telepon ? `
+        <div class="small">
+            <a href="https://wa.me/${order.telepon.replace(/\D/g, '')}" 
+               target="_blank" 
+               class="text-success text-decoration-none">
+                <i class="fab fa-whatsapp me-1"></i> ${order.telepon}
+            </a>
+        </div>
+    ` : `
+        <div class="small text-muted">No WA: -</div>
+    `}
+    <div class="small text-primary">${order.alamat || ''}</div>
+</td>
+    <td class="small">${itemsText}</td>
+    <td class="fw-bold text-primary">Rp ${Number(order.total_bayar || 0).toLocaleString()}</td>
+    <td>${metodeBayarBadge}</td>
+     ${buktiCell}  <!-- <-- BARU: KOLOM BUKTI BAYAR -->
+   <td><span class="badge ${getStatusBadge(order.status)}">${order.status}</span></td>
+    <td>${mapsLink}</td>
+   
+    <td>${actionHtml}</td>
+`;
+tbody.appendChild(tr);
+document.querySelectorAll('.bukti-zoom').forEach(img => {
+    img.addEventListener('click', function() {
+        previewBukti(this.src);  // this.src = URL gambar
+    });
+});
 
                 // Notifikasi suara untuk pending baru
                 if (order.status === 'Pending' && !localStorage.getItem('alert_' + order.key)) {
@@ -1760,6 +1781,7 @@ window.prosesOnlineKeKasir = prosesOnlineKeKasir;
 window.saveTransaction = saveTransaction;
 window.loadLaporan = loadLaporan;
 
+
 // Jalankan sekali lagi listener utama (aman dilakukan)
 listenOnlineOrders();
 
@@ -1775,6 +1797,8 @@ function formatLine(left, right, width = 32) {
     const space = width - left.length - right.length;
     return left + " ".repeat(Math.max(0, space)) + right;
 }
+
+
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
