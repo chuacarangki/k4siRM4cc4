@@ -1285,161 +1285,186 @@
     // ────────────────────────────────────────────────
 
 
+// Fungsi helper untuk normalisasi nomor WhatsApp (baru ditambahkan)
+function normalizePhoneNumber(phone) {
+    if (!phone) return ''; // Jika kosong, return empty
+    
+    // Hapus semua non-digit
+    let clean = phone.replace(/\D/g, '');
+    
+    // Asumsi Indonesia: Jika dimulai dengan 0, ganti jadi 62
+    if (clean.startsWith('0')) {
+        clean = '62' + clean.slice(1);
+    }
+    // Jika dimulai dengan +62 (sudah dihapus non-digit, jadi 62), biarkan
+    // Jika tanpa 62 tapi panjang cukup (misal 8191077337, asumsi tambah 62 jika >=9 digit)
+    else if (!clean.startsWith('62') && clean.length >= 9) {
+        clean = '62' + clean;
+    }
+    
+    // Return format wa.me (tanpa +)
+    return clean;
+}
+
+// Fungsi listenOnlineOrders() yang sudah diperbaiki
 function listenOnlineOrders() {
-        const orderRef = ref(db, 'pesanan_masuk');
-        onValue(orderRef, (snapshot) => {
-            const tbody = document.getElementById('online-orders-body');
-            if (!tbody) return;
-            tbody.innerHTML = '';
+    const orderRef = ref(db, 'pesanan_masuk');
+    onValue(orderRef, (snapshot) => {
+        const tbody = document.getElementById('online-orders-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
 
-            const data = snapshot.val();
-            if (!data) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">Belum ada pesanan masuk</td></tr>';
-                // Reset statistik jika tidak ada data
-                updateOnlineStats([]);
-                return;
+        const data = snapshot.val();
+        if (!data) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">Belum ada pesanan masuk</td></tr>';
+            // Reset statistik jika tidak ada data
+            updateOnlineStats([]);
+            return;
+        }
+
+        // Urutkan terbaru dulu (berdasarkan timestamp)
+        const sortedKeys = Object.keys(data).sort((a, b) => data[b].timestamp - data[a].timestamp);
+
+        // Filter status yang ditampilkan dan buat array pesanan
+        const statusTampil = ['Pending', 'Diterima', 'Proses', 'Menunggu Driver', 'Diantar', 'Sukses'];
+        const ordersArray = sortedKeys.map(key => ({ ...data[key], key })).filter(order => statusTampil.includes(order.status));
+
+        let pendingCount = 0;
+        ordersArray.forEach(order => {
+            if (order.status === 'Pending') pendingCount++;
+        });
+
+        // Panggil update statistik dengan array pesanan yang difilter
+        updateOnlineStats(ordersArray);
+
+        let orderCount = ordersArray.length;
+
+        if (orderCount === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">Tidak ada pesanan aktif</td></tr>';
+            return;
+        }
+
+        ordersArray.forEach(order => {
+            const itemsText = order.items?.map(i => `${i.name} (x${i.qty})`).join('<br>') || '-';
+
+            const mapsLink = (order.lat && order.lng)
+                ? `<a href="https://www.google.com/maps/search/?api=1&query=${order.lat}%2C${order.lng}&query_place_id=placeholder" 
+                     target="_blank" class="btn btn-sm btn-maps">
+                    <i class="fas fa-directions me-1"></i> Rute
+                  </a>`
+                : `<span class="text-muted small">Tanpa GPS</span>`;
+
+            // LOGIKA TOMBOL AKSI DISESUAIKAN DENGAN ALUR BARU
+            let actionHtml = '';
+            if (order.status === 'Pending') {
+                actionHtml = `
+                    <button class="btn btn-sm btn-success me-1" onclick="updateStatusPesanan('${order.key}', 'Diterima')">Terima</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="updateStatusPesanan('${order.key}', 'Dibatalkan')">Batal</button>
+                `;
+            } else if (order.status === 'Diterima') {
+                actionHtml = `
+                    <button class="btn btn-sm btn-primary me-1" onclick="prosesOnlineKeKasir('${order.key}')">Proses ke Dapur</button>
+                    <button class="btn btn-sm btn-info" onclick="cetakStrukOnline('${order.key}')">
+                        <i class="fas fa-print"></i> Cetak Struk
+                    </button>
+                `;
+            } else if (order.status === 'Proses') {
+                actionHtml = `
+                    <button class="btn btn-sm btn-warning fw-bold me-1" onclick="updateStatusPesanan('${order.key}', 'Siap Diantar')">
+                        <i class="fas fa-check-circle"></i> Siap Diantar
+                    </button>
+                    <button class="btn btn-sm btn-info" onclick="cetakStrukOnline('${order.key}')">
+                        <i class="fas fa-print"></i> Cetak Struk
+                    </button>
+                `;
+            } else if (order.status === 'Siap Diantar') {
+                actionHtml = `<span class="badge bg-info text-dark">MENUNGGU DRIVER...</span>`;
+            } else if (order.status === 'Diantar') {
+                actionHtml = `<span class="badge bg-dark">DIANTAR: ${order.driver_name || order.driver || '??'}</span>`;
+            } else if (order.status === 'Sukses') {
+                actionHtml = `<span class="badge bg-success">SELESAI</span>`;
             }
 
-            // Urutkan terbaru dulu (berdasarkan timestamp)
-            const sortedKeys = Object.keys(data).sort((a, b) => data[b].timestamp - data[a].timestamp);
+            // --- Penambahan Badge Metode Bayar (baru di sini) ---
+            let metodeBayarBadge = '<span class="badge bg-secondary">Tidak Diketahui</span>';
 
-            // Filter status yang ditampilkan dan buat array pesanan
-            const statusTampil = ['Pending', 'Diterima', 'Proses', 'Menunggu Driver', 'Diantar', 'Sukses'];
-            const ordersArray = sortedKeys.map(key => ({ ...data[key], key })).filter(order => statusTampil.includes(order.status));
+            const metode = (order.metode_bayar || '').toLowerCase().trim();
 
-            let pendingCount = 0;
-            ordersArray.forEach(order => {
-                if (order.status === 'Pending') pendingCount++;
-            });
-
-            // Panggil update statistik dengan array pesanan yang difilter
-            updateOnlineStats(ordersArray);
-
-            let orderCount = ordersArray.length;
-
-            if (orderCount === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">Tidak ada pesanan aktif</td></tr>';
-                return;
+            if (metode.includes('cod') || metode === 'tunai') {
+                metodeBayarBadge = '<span class="badge bg-success">COD</span>';
+            } 
+            else if (metode.includes('transfer') || metode === 'bank') {
+                metodeBayarBadge = '<span class="badge bg-primary">TRANSFER</span>';
+            } 
+            else if (metode === 'qris' || metode.includes('qris')) {
+                metodeBayarBadge = '<span class="badge bg-info">QRIS</span>';
             }
 
-            ordersArray.forEach(order => {
-                const itemsText = order.items?.map(i => `${i.name} (x${i.qty})`).join('<br>') || '-';
+            // Tambahkan ini sebelum const tr = ...
+            const buktiCell = order.bukti_pembayaran 
+                ? `
+                    <td>
+                        <img src="${order.bukti_pembayaran}" 
+                             alt="Bukti" 
+                             style="max-width: 80px; max-height: 80px; border-radius: 8px; cursor: pointer; object-fit: cover; border: 1px solid #ddd;"
+                             onclick="window.previewBukti('${order.bukti_pembayaran.replace(/'/g, "\\'").replace(/"/g, '\\"')}')">
+                        <br><small class="text-muted">Klik untuk zoom</small>
+                    </td>
+                `
+                : `<td><span class="text-muted small">—</span></td>`;
 
-       const mapsLink = (order.lat && order.lng)
-    ? `<a href="https://www.google.com/maps/search/?api=1&query=${order.lat}%2C${order.lng}&query_place_id=placeholder" 
-         target="_blank" class="btn btn-sm btn-maps">
-        <i class="fas fa-directions me-1"></i> Rute
-      </a>`
-    : `<span class="text-muted small">Tanpa GPS</span>`;
+            // BAGIAN PERBAIKAN: Gunakan normalizePhoneNumber() untuk href
+            const teleponHtml = order.telepon ? `
+                <div class="small">
+                    <a href="https://wa.me/${normalizePhoneNumber(order.telepon)}" 
+                       target="_blank" 
+                       class="text-success text-decoration-none">
+                        <i class="fab fa-whatsapp me-1"></i> ${order.telepon}  <!-- Tampilan tetap asli -->
+                    </a>
+                </div>
+            ` : `
+                <div class="small text-muted">No WA: -</div>
+            `;
 
-                // LOGIKA TOMBOL AKSI DISESUAIKAN DENGAN ALUR BARU
-               let actionHtml = '';
-if (order.status === 'Pending') {
-    actionHtml = `
-        <button class="btn btn-sm btn-success me-1" onclick="updateStatusPesanan('${order.key}', 'Diterima')">Terima</button>
-        <button class="btn btn-sm btn-outline-danger" onclick="updateStatusPesanan('${order.key}', 'Dibatalkan')">Batal</button>
-    `;
-} else if (order.status === 'Diterima') {
-    actionHtml = `
-        <button class="btn btn-sm btn-primary me-1" onclick="prosesOnlineKeKasir('${order.key}')">Proses ke Dapur</button>
-        <button class="btn btn-sm btn-info" onclick="cetakStrukOnline('${order.key}')">
-            <i class="fas fa-print"></i> Cetak Struk
-        </button>
-    `;
-} else if (order.status === 'Proses') {
-    actionHtml = `
-        <button class="btn btn-sm btn-warning fw-bold me-1" onclick="updateStatusPesanan('${order.key}', 'Siap Diantar')">
-            <i class="fas fa-check-circle"></i> Siap Diantar
-        </button>
-        <button class="btn btn-sm btn-info" onclick="cetakStrukOnline('${order.key}')">
-            <i class="fas fa-print"></i> Cetak Struk
-        </button>
-    `;
-} else if (order.status === 'Siap Diantar') {
-    actionHtml = `<span class="badge bg-info text-dark">MENUNGGU DRIVER...</span>`;
-} else if (order.status === 'Diantar') {
-    actionHtml = `<span class="badge bg-dark">DIANTAR: ${order.driver_name || order.driver || '??'}</span>`;
-} else if (order.status === 'Sukses') {
-    actionHtml = `<span class="badge bg-success">SELESAI</span>`;
-}
-
-                // --- Penambahan Badge Metode Bayar (baru di sini) ---
-              let metodeBayarBadge = '<span class="badge bg-secondary">Tidak Diketahui</span>';
-
-const metode = (order.metode_bayar || '').toLowerCase().trim();
-
-if (metode.includes('cod') || metode === 'tunai') {
-    metodeBayarBadge = '<span class="badge bg-success">COD</span>';
-} 
-else if (metode.includes('transfer') || metode === 'bank') {
-    metodeBayarBadge = '<span class="badge bg-primary">TRANSFER</span>';
-} 
-else if (metode === 'qris' || metode.includes('qris')) {
-    metodeBayarBadge = '<span class="badge bg-info">QRIS</span>';
-}
-
-              // Tambahkan ini sebelum const tr = ...
-const buktiCell = order.bukti_pembayaran 
-    ? `
-        <td>
-            <img src="${order.bukti_pembayaran}" 
-                 alt="Bukti" 
-                 style="max-width: 80px; max-height: 80px; border-radius: 8px; cursor: pointer; object-fit: cover; border: 1px solid #ddd;"
-                 onclick="window.previewBukti('${order.bukti_pembayaran.replace(/'/g, "\\'").replace(/"/g, '\\"')}')">
-            <br><small class="text-muted">Klik untuk zoom</small>
-        </td>
-    `
-    : `<td><span class="text-muted small">—</span></td>`;
-
-const tr = document.createElement('tr');
-tr.innerHTML = `
-    <td class="small">${order.waktu}</td>
-  <td>
-    <div class="fw-bold">${order.pelanggan}</div>
-    ${order.telepon ? `
-        <div class="small">
-            <a href="https://wa.me/${order.telepon.replace(/\D/g, '')}" 
-               target="_blank" 
-               class="text-success text-decoration-none">
-                <i class="fab fa-whatsapp me-1"></i> ${order.telepon}
-            </a>
-        </div>
-    ` : `
-        <div class="small text-muted">No WA: -</div>
-    `}
-    <div class="small text-primary">${order.alamat || ''}</div>
-</td>
-    <td class="small">${itemsText}</td>
-    <td class="fw-bold text-primary">Rp ${Number(order.total_bayar || 0).toLocaleString()}</td>
-    <td>${metodeBayarBadge}</td>
-     ${buktiCell}  <!-- <-- BARU: KOLOM BUKTI BAYAR -->
-   <td><span class="badge ${getStatusBadge(order.status)}">${order.status}</span></td>
-    <td>${mapsLink}</td>
-   
-    <td>${actionHtml}</td>
-`;
-tbody.appendChild(tr);
-document.querySelectorAll('.bukti-zoom').forEach(img => {
-    img.addEventListener('click', function() {
-        previewBukti(this.src);  // this.src = URL gambar
-    });
-});
-
-                // Notifikasi suara untuk pending baru
-                if (order.status === 'Pending' && !localStorage.getItem('alert_' + order.key)) {
-                    playNotif();
-                    localStorage.setItem('alert_' + order.key, 'true');
-                }
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="small">${order.waktu}</td>
+                <td>
+                    <div class="fw-bold">${order.pelanggan}</div>
+                    ${teleponHtml}  <!-- <-- BAGIAN YANG DIPERBAIKI -->
+                    <div class="small text-primary">${order.alamat || ''}</div>
+                </td>
+                <td class="small">${itemsText}</td>
+                <td class="fw-bold text-primary">Rp ${Number(order.total_bayar || 0).toLocaleString()}</td>
+                <td>${metodeBayarBadge}</td>
+                 ${buktiCell}  <!-- <-- BARU: KOLOM BUKTI BAYAR -->
+               <td><span class="badge ${getStatusBadge(order.status)}">${order.status}</span></td>
+                <td>${mapsLink}</td>
+               
+                <td>${actionHtml}</td>
+            `;
+            tbody.appendChild(tr);
+            document.querySelectorAll('.bukti-zoom').forEach(img => {
+                img.addEventListener('click', function() {
+                    previewBukti(this.src);  // this.src = URL gambar
+                });
             });
 
-            // Update badge pending di sidebar
-            const countBadge = document.getElementById('online-count');
-            if (countBadge) {
-                countBadge.textContent = pendingCount;
-                countBadge.style.display = pendingCount > 0 ? 'inline' : 'none';
+            // Notifikasi suara untuk pending baru
+            if (order.status === 'Pending' && !localStorage.getItem('alert_' + order.key)) {
+                playNotif();
+                localStorage.setItem('alert_' + order.key, 'true');
             }
         });
-    }
+
+        // Update badge pending di sidebar
+        const countBadge = document.getElementById('online-count');
+        if (countBadge) {
+            countBadge.textContent = pendingCount;
+            countBadge.style.display = pendingCount > 0 ? 'inline' : 'none';
+        }
+    });
+}
 
     // Fungsi untuk menghitung dan memperbarui tampilan statistik online (sudah berfungsi penuh)
     function updateOnlineStats(ordersArray) {
