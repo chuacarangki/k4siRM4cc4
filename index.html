@@ -1345,7 +1345,7 @@ function listenOnlineOrders() {
         }
 
         ordersArray.forEach(order => {
-            const itemsText = order.items?.map(i => `${i.name} (x${i.qty})`).join('<br>') || '-';
+          const itemsText = order.items?.map(i => `${i.name} (x${i.count || 1})`).join('<br>') || '-';
 
             const mapsLink = (order.lat && order.lng)
                 ? `<a href="https://www.google.com/maps/search/?api=1&query=${order.lat}%2C${order.lng}&query_place_id=placeholder" 
